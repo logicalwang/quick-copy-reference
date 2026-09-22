@@ -1,0 +1,13 @@
+import {spawnSync} from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+if(process.platform!=='win32') throw new Error('Build the reference helper on Windows with .NET Framework 4.x installed.');
+const framework=path.join(process.env.WINDIR || 'C:/Windows','Microsoft.NET','Framework64','v4.0.30319');
+const csc=path.join(framework,'csc.exe');
+const output=path.resolve('dev.vicky.copyreference.sdPlugin/native/ReferenceCapture.exe');
+fs.mkdirSync(path.dirname(output),{recursive:true});
+const refs=['System.Web.Extensions.dll','System.Windows.Forms.dll','Microsoft.CSharp.dll',...['UIAutomationClient.dll','UIAutomationTypes.dll','WindowsBase.dll'].map(f=>path.join(framework,'WPF',f))];
+const result=spawnSync(csc,['/nologo','/target:winexe','/optimize+','/platform:anycpu','/out:'+output,...refs.map(r=>'/reference:'+r),path.resolve('native/ReferenceCapture.cs')],{stdio:'inherit',windowsHide:true});
+if(result.error) throw result.error;
+if(result.status!==0)process.exit(result.status || 1);
+console.log('Built native reference helper.');

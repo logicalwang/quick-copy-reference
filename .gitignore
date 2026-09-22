@@ -1,0 +1,7 @@
+node_modules/
+*.streamDeckPlugin
+*.vsix
+dev.vicky.copyreference.sdPlugin/bin/
+dev.vicky.copyreference.sdPlugin/native/
+*.log
+.DS_Store

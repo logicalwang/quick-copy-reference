@@ -1,0 +1,43 @@
+{
+  "Name": "Copy Reference",
+  "Version": "0.1.0.0",
+  "Author": "Vicky",
+  "Actions": [
+    {
+      "Name": "复制引用 · Copy Reference",
+      "UUID": "dev.vicky.copyreference.reference",
+      "Icon": "imgs/actions/reference/icon",
+      "Tooltip": "Copy a Markdown reference to the focused file or page, with selected text or line range when available.",
+      "PropertyInspectorPath": "ui/reference.html",
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/reference/key",
+          "TitleAlignment": "bottom",
+          "FontSize": 13
+        }
+      ]
+    }
+  ],
+  "Category": "Copy Reference",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "CodePath": "bin/plugin.js",
+  "Description": "Copy the focused source as a single-line Markdown reference for Codex and other assistants.",
+  "Icon": "imgs/plugin/marketplace",
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "OS": [
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Nodejs": {
+    "Version": "24"
+  },
+  "UUID": "dev.vicky.copyreference"
+}
