@@ -1,13 +1,13 @@
-# Vicky Reference 便携版
+# Quick Copy Reference · 快速复制引用
 
 **简体中文** | [English](README.en.md)
 
-版本 **1.0.5**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
+版本 **1.0.6**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
 
 ## 安装与语言
 
-1. 中文下载 `VickyReference-portable-1.0.5-zh-CN.zip`，英文下载 `VickyReference-portable-1.0.5-en.zip`。完整解压到可写、准备长期使用的目录。
-2. 启动 `VickyReference.exe`，首次选择语言和快捷键。点击输入框，直接按喜欢的组合键，例如 Ctrl+Alt+Shift+R。
+1. 中文下载 `QuickCopyReference-portable-1.0.6-zh-CN.zip`，英文下载 `QuickCopyReference-portable-1.0.6-en.zip`。完整解压到可写、准备长期使用的目录。
+2. 启动 `QuickCopyReference.exe`，首次选择语言和快捷键。点击输入框，直接按喜欢的组合键，例如 Ctrl+Alt+Shift+R。
 3. 保存并启用。在支持的软件中选中文字或文件，松开按键，按快捷键，再粘贴。
 
 两个包使用相同的双语程序。可在 **托盘菜单 → 语言 → 简体中文／English**，或快捷键设置窗口切换，立即生效。选择保存在 `reference-settings.json`。旧配置没有语言字段时按 Windows 界面语言选择；非中文系统默认英文。`--language=zh-CN` 或 `--language=en` 可临时覆盖本次调用的语言。
@@ -16,7 +16,10 @@
 
 ## 更新
 
-先退出旧托盘程序，用 `VickyReference-update-1.0.5.zip` 覆盖三个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
+`QuickCopyReference.exe` 是新的主入口；旧名 `VickyReference.exe` 保留为同一程序的兼容入口，原鼠标映射、脚本和开机启动仍可使用。内部配置和本地状态目录沿用旧名称，保留已有偏好。
+
+
+先退出旧托盘程序，用 `QuickCopyReference-update-1.0.6.zip` 覆盖四个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
 
 ## 快捷键冲突
 
@@ -50,7 +53,7 @@ PowerPoint 放映／演讲者视图暂未适配，请返回编辑窗口。未保
 
 ## VS Code 桥接
 
-在 **扩展 → 从 VSIX 安装** 选择包内的 `vicky-reference-0.1.0.vsix`，重启 VS Code，然后聚焦本地已保存文件。内部使用 Ctrl+Alt+Shift+F12，不是你手动按的全局快捷键。暂不支持 SSH／WSL 等远程 URI。便携版与原 Stream Deck 版桥接扩展不同，请按各自说明安装。
+在 **扩展 → 从 VSIX 安装** 选择包内的 `vicky-reference-0.1.1.vsix`，重启 VS Code，然后聚焦本地已保存文件。内部使用 Ctrl+Alt+Shift+F12，不是你手动按的全局快捷键。暂不支持 SSH／WSL 等远程 URI。便携版与原 Stream Deck 版桥接扩展不同，请按各自说明安装。
 
 ## 隐私与排错
 
@@ -61,11 +64,11 @@ PowerPoint 放映／演讲者视图暂未适配，请返回编辑窗口。未保
 ## 脚本调用与源码构建
 
 ```text
-VickyReference.exe --start
-VickyReference.exe --copy
-VickyReference.exe --status
-VickyReference.exe --quit
-VickyReference.exe --start --language=zh-CN
+QuickCopyReference.exe --start
+QuickCopyReference.exe --copy
+QuickCopyReference.exe --status
+QuickCopyReference.exe --quit
+QuickCopyReference.exe --start --language=zh-CN
 ```
 
 常驻时 `--copy` 返回请求已提交，实际结果由托盘提示；未常驻时直接读取，并以退出码表示结果。`ReferenceCapture.exe --diagnose` 只返回状态，不返回文档路径或选区。直接调用底层程序没有托盘反馈及组合键释放等待。

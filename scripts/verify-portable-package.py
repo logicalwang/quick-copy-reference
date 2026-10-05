@@ -4,7 +4,11 @@ import hashlib, io, json, os, re, zipfile
 root=Path(__file__).resolve().parent.parent
 portable=root/'portable'
 version=re.search(r'Version="([0-9.]+)"',(portable/'source/VickyReference.cs').read_text(encoding='utf8')).group(1)
-executables=['VickyReference.exe','CopyReference.exe','ReferenceCapture.exe']
+executables=['QuickCopyReference.exe', 'VickyReference.exe','CopyReference.exe','ReferenceCapture.exe']
+assert (portable/'QuickCopyReference.exe').read_bytes()==(portable/'VickyReference.exe').read_bytes()==(portable/'CopyReference.exe').read_bytes()
+bridge=json.loads((portable/'vscode-bridge/extension/package.json').read_text(encoding='utf8'))
+assert bridge['version']=='0.1.1' and bridge['displayName']=='Quick Copy Reference Bridge'
+assert bridge['name']=='vicky-reference' and bridge['publisher']=='vicky-local'
 private_paths=[str(root.resolve()), os.environ.get('USERPROFILE','')]
 def scan(name,data):
     if name.endswith(('.pdb','.log','.docx','.xlsx','.pptx','.pdf')) or Path(name).name in ['status.json','last-error.json','request.json']:
@@ -19,21 +23,21 @@ def scan(name,data):
         with zipfile.ZipFile(io.BytesIO(data)) as nested:
             for entry in nested.namelist():scan(entry,nested.read(entry))
 for language in ['zh-CN','en']:
-    with zipfile.ZipFile(root/'dist'/('VickyReference-portable-'+version+'-'+language+'.zip')) as bundle:
+    with zipfile.ZipFile(root/'dist'/('QuickCopyReference-portable-'+version+'-'+language+'.zip')) as bundle:
         assert len(bundle.namelist())==len(set(bundle.namelist()))
         for name in bundle.namelist():
-            assert name.startswith('VickyReference/') and '..' not in Path(name).parts
+            assert name.startswith('QuickCopyReference/') and '..' not in Path(name).parts
             scan(name,bundle.read(name))
-        settings=json.loads(bundle.read('VickyReference/reference-settings.json'))
+        settings=json.loads(bundle.read('QuickCopyReference/reference-settings.json'))
         assert settings=={'hotkey':'Ctrl+Alt+Shift+R','showSuccessNotification':True,'configured':False,'language':language}
         for name in executables:
-            assert bundle.read('VickyReference/'+name)==(portable/name).read_bytes()
+            assert bundle.read('QuickCopyReference/'+name)==(portable/name).read_bytes()
         for name in ['Localizer.cs','translations.json','build.ps1','ReferenceCapture.cs','VickyReference.cs']:
-            assert bundle.read('VickyReference/source/'+name)==(portable/'source'/name).read_bytes()
+            assert bundle.read('QuickCopyReference/source/'+name)==(portable/'source'/name).read_bytes()
         for name in ['README.zh-CN.md','README.en.md']:
-            assert bundle.read('VickyReference/'+name)==(portable/name).read_bytes()
-        assert bundle.read('VickyReference/README.md')==(portable/('README.'+language+'.md')).read_bytes()
-with zipfile.ZipFile(root/'dist'/('VickyReference-update-'+version+'.zip')) as update:
+            assert bundle.read('QuickCopyReference/'+name)==(portable/name).read_bytes()
+        assert bundle.read('QuickCopyReference/README.md')==(portable/('README.'+language+'.md')).read_bytes()
+with zipfile.ZipFile(root/'dist'/('QuickCopyReference-update-'+version+'.zip')) as update:
     assert set(update.namelist())==set(executables+['LICENSE'])
     for name in executables:assert update.read(name)==(portable/name).read_bytes()
 for line in (root/'dist/SHA256SUMS.txt').read_text().splitlines():

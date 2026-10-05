@@ -63,9 +63,9 @@ jobs:
         with:
           name: portable-release
           path: |
-            dist/VickyReference-portable-*.zip
-            dist/VickyReference-update-*.zip
-            dist/vicky-reference-0.1.0.vsix
+            dist/QuickCopyReference-portable-*.zip
+            dist/QuickCopyReference-update-*.zip
+            dist/vicky-reference-0.1.1.vsix
             dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14

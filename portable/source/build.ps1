@@ -10,4 +10,5 @@ if ($LASTEXITCODE -ne 0) { throw 'Reference helper compilation failed' }
 & $referenceCompiler /nologo /target:winexe /optimize+ /platform:anycpu ('/out:' + (Join-Path $referenceRoot 'VickyReference.exe')) /reference:System.Web.Extensions.dll /reference:System.Windows.Forms.dll /reference:System.Drawing.dll /reference:Microsoft.CSharp.dll @referenceLocalization (Join-Path $PSScriptRoot 'VickyReference.cs')
 if ($LASTEXITCODE -ne 0) { throw 'Portable hotkey tool compilation failed' }
 Copy-Item -LiteralPath (Join-Path $referenceRoot 'VickyReference.exe') -Destination (Join-Path $referenceRoot 'CopyReference.exe')
-Write-Output 'Built portable reference tool.'
+Copy-Item -LiteralPath (Join-Path $referenceRoot 'VickyReference.exe') -Destination (Join-Path $referenceRoot 'QuickCopyReference.exe')
+Write-Output 'Built Quick Copy Reference and compatibility launchers.'

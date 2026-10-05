@@ -1,4 +1,5 @@
 {
+  "快速复制引用":"Quick Copy Reference",
   "快捷键不能为空":"The shortcut cannot be empty.",
   "快捷键包含重复修饰键":"The shortcut contains a duplicate modifier.",
   "无法识别快捷键：":"Unrecognized shortcut: ",
@@ -61,7 +62,7 @@
   "单个功能键可能覆盖软件原有功能，建议使用多修饰键组合。":"A single function key may override an app shortcut. Prefer multiple modifiers.",
   "此组合可能与软件内部快捷键重叠，建议使用多修饰键组合。":"This combination may overlap with app shortcuts. Prefer multiple modifiers.",
   "应用内部快捷键仍可能重叠，请避开你常用的按键。":"App shortcuts may still overlap. Avoid keys you normally use.",
-  "设置复制引用快捷键":"Set Copy Reference shortcut",
+  "设置快速复制引用快捷键":"Set Quick Copy Reference shortcut",
   "点击下面的输入框，直接按下你想用的快捷键。\n支持 Ctrl／Alt／Shift 组合键，或单个功能键。":"Click the box below and press your preferred shortcut.\nUse Ctrl, Alt, or Shift combinations, or a single function key.",
   "检测包含常用快捷键清单和已注册的全局快捷键。\n其他软件自定义按键／鼠标宏仍无法全面检测；\n启用后可能覆盖原功能，请避开你常用的按键。":"Checks cover common shortcuts and registered global shortcuts.\nCustom app shortcuts and mouse macros cannot all be detected.\nEnabling a shortcut may override its original function.",
   "仍然使用此常用快捷键（将覆盖原功能）":"Use this common shortcut anyway (overrides its original function)",

@@ -1,9 +1,9 @@
 {
   "name": "vicky-reference",
-  "displayName": "Vicky Deck Reference",
-  "description": "Provide active file and selection line references to your Stream Deck button.",
+  "displayName": "Quick Copy Reference Bridge",
+  "description": "Provide local file paths and selection line ranges to the Quick Copy Reference Windows hotkey tool.",
   "publisher": "vicky-local",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -18,7 +18,7 @@
     "commands": [
       {
         "command": "vickyReference.capture",
-        "title": "Vicky Deck: Capture File Reference"
+        "title": "Quick Copy Reference: Capture File Reference"
       }
     ],
     "keybindings": [

@@ -11,7 +11,7 @@ test('default configuration asks for a shortcut and contains no saved user prefe
  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'reference-settings.json'),'utf8')),{hotkey:'Ctrl+Alt+Shift+R',showSuccessNotification:true,configured:false,language:'auto'});
 });
 test('portable shortcut parsing, clipboard-shortcut protection and actual registration probe',()=>{
- for(const language of ['zh-CN','en']){const reply=invoke('VickyReference.exe',['--self-test','--language='+language]);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.5');assert.equal(reply.language,language);assert.ok(reply.protectedShortcut.includes('Ctrl+C'));assert.equal(reply.menuLabel,language==='en'?'View latest error':'查看最近错误');assert.equal(reply.successMessage,language==='en'?'Reference copied. Ready to paste.':'已复制引用，可以粘贴了');}
+ for(const name of ['QuickCopyReference.exe','VickyReference.exe'])for(const language of ['zh-CN','en']){const reply=invoke(name,['--self-test','--language='+language]);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.6');assert.equal(reply.language,language);assert.equal(reply.product,language==='en'?'Quick Copy Reference':'快速复制引用');assert.ok(reply.protectedShortcut.includes('Ctrl+C'));assert.equal(reply.menuLabel,language==='en'?'View latest error':'查看最近错误');assert.equal(reply.successMessage,language==='en'?'Reference copied. Ready to paste.':'已复制引用，可以粘贴了');}
 });
 test('English truncation marker is localized while Chinese document text stays intact',()=>{
  const result=format([{name:'文档.md',path:'C:/Example/文档.md',focus:'中文'.repeat(6500)}],'en');assert.ok(result.text.includes('中文'));assert.ok(result.text.includes('selection truncated'));assert.ok(!result.text.includes('选区过长'));

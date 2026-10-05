@@ -12,7 +12,7 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 public static class PortableReference {
-    public const string Version="1.0.5";
+    public const string Version="1.0.6";
     public static string L(string value){return Localizer.Text(value);}
     public static readonly JavaScriptSerializer Json=new JavaScriptSerializer();
     public static readonly string Root=AppDomain.CurrentDomain.BaseDirectory;
@@ -85,7 +85,7 @@ public static class PortableReference {
     static string ShortcutAdvice(Shortcut key){return key.Modifiers==0?L("单个功能键可能覆盖软件原有功能，建议使用多修饰键组合。"):key.Modifiers==2 || key.Modifiers==1?L("此组合可能与软件内部快捷键重叠，建议使用多修饰键组合。"):L("应用内部快捷键仍可能重叠，请避开你常用的按键。");}
     public static Settings Configure(Settings current) {
         string previousLanguage=Localizer.Language;
-        using(var form=new Form{Text=L("设置复制引用快捷键"),Width=680,Height=525,Font=new Font(SystemFonts.MessageBoxFont.FontFamily,10),FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false,StartPosition=FormStartPosition.CenterScreen}) {
+        using(var form=new Form{Text=L("设置快速复制引用快捷键"),Width=680,Height=525,Font=new Font(SystemFonts.MessageBoxFont.FontFamily,10),FormBorderStyle=FormBorderStyle.FixedDialog,MaximizeBox=false,MinimizeBox=false,StartPosition=FormStartPosition.CenterScreen}) {
             var languageLabel=new Label{Left=20,Top=20,Width=130,Text=L("语言")};
             var language=new ComboBox{Left=150,Top=16,Width=220,DropDownStyle=ComboBoxStyle.DropDownList};
             language.Items.AddRange(new object[]{"简体中文","English"});language.SelectedIndex=Localizer.Language=="zh-CN"?0:1;
@@ -102,7 +102,7 @@ public static class PortableReference {
             acknowledge.CheckedChanged+=(s,e)=>check();
             language.SelectedIndexChanged+=(s,e)=>{
                 Localizer.SetLanguage(language.SelectedIndex==0?"zh-CN":"en");
-                form.Text=L("设置复制引用快捷键");languageLabel.Text=L("语言");
+                form.Text=L("设置快速复制引用快捷键");languageLabel.Text=L("语言");
                 title.Text=L("点击下面的输入框，直接按下你想用的快捷键。\n支持 Ctrl／Alt／Shift 组合键，或单个功能键。");
                 limitation.Text=L("检测包含常用快捷键清单和已注册的全局快捷键。\n其他软件自定义按键／鼠标宏仍无法全面检测；\n启用后可能覆盖原功能，请避开你常用的按键。");
                 acknowledge.Text=L("仍然使用此常用快捷键（将覆盖原功能）");success.Text=L("复制成功时显示提示");boot.Text=L("开机启动");save.Text=L("保存并启用");cancel.Text=L("取消");check();
@@ -139,7 +139,7 @@ public static class PortableReference {
         try {
             shell=Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell"));dynamic automation=shell;
             shortcut=automation.CreateShortcut(StartupFile);dynamic link=shortcut;
-            link.TargetPath=Application.ExecutablePath;link.Arguments="--start";link.WorkingDirectory=Root;link.WindowStyle=7;link.Description="Vicky Reference keyboard shortcut";link.Save();
+            link.TargetPath=Application.ExecutablePath;link.Arguments="--start";link.WorkingDirectory=Root;link.WindowStyle=7;link.Description="Quick Copy Reference keyboard shortcut";link.Save();
         }finally{if(shortcut!=null)Marshal.FinalReleaseComObject(shortcut);if(shell!=null)Marshal.FinalReleaseComObject(shell);}
     }
     public static Result Failure(string code,string message){return new Result{ok=false,code=code,message=message};}
@@ -200,13 +200,13 @@ public static class PortableReference {
                 Output(new{ok=true,running=running,state=saved});return 0;
             }
             if(mode=="--quit"){Output(new{ok=true,requested=Signal(QuitEvent)});return 0;}
-            if(mode=="--install-startup" || mode=="--remove-startup"){Startup(mode=="--install-startup");Output(new{ok=true});MessageBox.Show(mode=="--install-startup"?L("已设置开机启动。请保持此文件夹的位置不变。"):L("已取消开机启动。"),"Vicky Reference");return 0;}
-            if(mode=="--self-test"){SelfTest();Output(new{ok=true,version=Version,language=Localizer.Language,successMessage=Message(new Result{ok=true,count=1}),protectedShortcut=ChoiceError(ParseShortcut("Ctrl+C"),true),menuLabel=L("查看最近错误")});return 0;}
+            if(mode=="--install-startup" || mode=="--remove-startup"){Startup(mode=="--install-startup");Output(new{ok=true});MessageBox.Show(mode=="--install-startup"?L("已设置开机启动。请保持此文件夹的位置不变。"):L("已取消开机启动。"),L("快速复制引用"));return 0;}
+            if(mode=="--self-test"){SelfTest();Output(new{ok=true,version=Version,product=L("快速复制引用"),language=Localizer.Language,successMessage=Message(new Result{ok=true,count=1}),protectedShortcut=ChoiceError(ParseShortcut("Ctrl+C"),true),menuLabel=L("查看最近错误")});return 0;}
             if(mode=="--copy") {
                 IntPtr target=GetForegroundWindow();if(Signal(CopyEvent)){Output(new{ok=true,requested=true});return 0;}
                 var shortcut=ParseShortcut(ReadSettings().hotkey);var timer=Stopwatch.StartNew();while(!KeysReleased(shortcut) && timer.ElapsedMilliseconds<2000)Thread.Sleep(20);
                 Result result=WithApp(KeysReleased(shortcut)?Capture(target):Failure("keys_held",null),target);SaveError(result);Output(result);
-                if(!result.ok)using(var icon=new NotifyIcon{Icon=SystemIcons.Application,Visible=true}){icon.ShowBalloonTip(2000,"Vicky Reference",Message(result),ToolTipIcon.Warning);Thread.Sleep(1000);}
+                if(!result.ok)using(var icon=new NotifyIcon{Icon=SystemIcons.Application,Visible=true}){icon.ShowBalloonTip(2000,L("快速复制引用"),Message(result),ToolTipIcon.Warning);Thread.Sleep(1000);}
                 return result.ok?0:1;
             }
             if(mode!="--start")throw new Exception(L("参数：--start、--copy、--status、--quit、--install-startup、--remove-startup"));
@@ -219,7 +219,7 @@ public static class PortableReference {
                 }finally{instance.ReleaseMutex();}
             }
             return 0;
-        }catch(Exception error){Output(new{ok=false,message=error.Message});bool interactive=args.Length==0?!string.Equals(Path.GetFileNameWithoutExtension(Application.ExecutablePath),"CopyReference",StringComparison.OrdinalIgnoreCase):args[0]=="--start" || args[0]=="--install-startup" || args[0]=="--remove-startup";if(interactive)MessageBox.Show(error.Message,"Vicky Reference",MessageBoxButtons.OK,MessageBoxIcon.Warning);return 1;}
+        }catch(Exception error){Output(new{ok=false,message=error.Message});bool interactive=args.Length==0?!string.Equals(Path.GetFileNameWithoutExtension(Application.ExecutablePath),"CopyReference",StringComparison.OrdinalIgnoreCase):args[0]=="--start" || args[0]=="--install-startup" || args[0]=="--remove-startup";if(interactive)MessageBox.Show(error.Message,L("快速复制引用"),MessageBoxButtons.OK,MessageBoxIcon.Warning);return 1;}
     }
     static void SelfTest() {
         string language=Localizer.Language;try{Localizer.SetLanguage("en");foreach(string key in Localizer.Keys){string text=L(key);if(string.IsNullOrWhiteSpace(text) || System.Text.RegularExpressions.Regex.IsMatch(text,@"[\u4e00-\u9fff]"))throw new Exception("Incomplete English translation");}}finally{Localizer.SetLanguage(language);}
@@ -253,7 +253,7 @@ public static class PortableReference {
             settings=value;shortcut=ParseShortcut(settings.hotkey);window.Copy=Request;window.Quit=ExitThread;window.Completed=Completed;
             string conflict=ChoiceError(shortcut,settings.allowCommonShortcut);if(conflict!=null)throw new Exception(conflict);
             registered=RegisterHotKey(window.Handle,hotkeyId,shortcut.Modifiers|0x4000,(uint)shortcut.Key);
-            icon.Icon=SystemIcons.Application;icon.Text="Vicky Reference · "+shortcut.Text;icon.Visible=true;
+            icon.Icon=SystemIcons.Application;icon.Text=L("快速复制引用")+" · "+shortcut.Text;icon.Visible=true;
             var menu=new ContextMenuStrip();menu.Items.Add(L("设置快捷键…（")+shortcut.Text+"）",null,(s,e)=>Edit());
             menu.Items.Add(L("编辑配置"),null,(s,e)=>Process.Start(new ProcessStartInfo("notepad.exe","\""+Path.Combine(Root,"reference-settings.json")+"\""){UseShellExecute=true}));
             menu.Items.Add(L("重新加载配置"),null,(s,e)=>Reload());
@@ -268,13 +268,13 @@ public static class PortableReference {
             quitWait=ThreadPool.RegisterWaitForSingleObject(quit,(s,t)=>PostMessage(window.Handle,0x8002,IntPtr.Zero,IntPtr.Zero),null,Timeout.Infinite,false);
             RefreshMenu();WriteState();Notify(registered?L("已启用 ")+shortcut.Text:L("快捷键未能注册；请从托盘“设置快捷键…”更换按键"),!registered);
         }
-        void RefreshMenu(){var items=icon.ContextMenuStrip.Items;items[0].Text=L("设置快捷键…（")+shortcut.Text+(Localizer.Language=="en"?")":"）");items[1].Text=L("编辑配置");items[2].Text=L("重新加载配置");items[3].Text=L("查看最近错误");items[4].Text=L("开机启动");items[5].Text=L("打开工具文件夹");items[6].Text=L("语言");items[7].Text=L("退出");var languages=(ToolStripMenuItem)items[6];((ToolStripMenuItem)languages.DropDownItems[0]).Checked=Localizer.Language=="zh-CN";((ToolStripMenuItem)languages.DropDownItems[1]).Checked=Localizer.Language=="en";}
+        void RefreshMenu(){icon.Text=L("快速复制引用")+" · "+shortcut.Text;var items=icon.ContextMenuStrip.Items;items[0].Text=L("设置快捷键…（")+shortcut.Text+(Localizer.Language=="en"?")":"）");items[1].Text=L("编辑配置");items[2].Text=L("重新加载配置");items[3].Text=L("查看最近错误");items[4].Text=L("开机启动");items[5].Text=L("打开工具文件夹");items[6].Text=L("语言");items[7].Text=L("退出");var languages=(ToolStripMenuItem)items[6];((ToolStripMenuItem)languages.DropDownItems[0]).Checked=Localizer.Language=="zh-CN";((ToolStripMenuItem)languages.DropDownItems[1]).Checked=Localizer.Language=="en";}
         void ChangeLanguage(string language){if(busy || editing)return;string previous=settings.language;try{settings.language=language;SaveSettings(settings);Localizer.SetLanguage(language);RefreshMenu();WriteState();}catch(Exception error){settings.language=previous;Notify(error.Message,true);}}
         void WriteState(){try{Directory.CreateDirectory(Path.GetDirectoryName(StateFile));File.WriteAllText(StateFile,Json.Serialize(new{pid=Process.GetCurrentProcess().Id,executable=Application.ExecutablePath,version=Version,language=Localizer.Language,hotkey=shortcut.Text,registered=registered,completedCount=completedCount,lastResult=lastResult==null?null:new{ok=lastResult.ok,code=lastResult.code,count=lastResult.count,app=lastResult.app,strategy=lastResult.strategy,diagnostics=lastResult.diagnostics}}),new UTF8Encoding(false));}catch{}}
         void Edit() {
             if(busy || editing){Notify(L("正在复制，请稍后设置"),false);return;}
             editing=true;var old=shortcut;if(registered)UnregisterHotKey(window.Handle,hotkeyId);registered=false;
-            try{var next=Configure(settings);if(next!=null){settings=next;shortcut=ParseShortcut(next.hotkey);}registered=RegisterHotKey(window.Handle,hotkeyId,shortcut.Modifiers|0x4000,(uint)shortcut.Key);if(!registered){shortcut=old;registered=RegisterHotKey(window.Handle,hotkeyId,shortcut.Modifiers|0x4000,(uint)shortcut.Key);Notify(L("快捷键启用失败，已尝试恢复原快捷键"),true);}icon.Text="Vicky Reference · "+shortcut.Text;RefreshMenu();startup.Checked=File.Exists(StartupFile);WriteState();}finally{editing=false;}
+            try{var next=Configure(settings);if(next!=null){settings=next;shortcut=ParseShortcut(next.hotkey);}registered=RegisterHotKey(window.Handle,hotkeyId,shortcut.Modifiers|0x4000,(uint)shortcut.Key);if(!registered){shortcut=old;registered=RegisterHotKey(window.Handle,hotkeyId,shortcut.Modifiers|0x4000,(uint)shortcut.Key);Notify(L("快捷键启用失败，已尝试恢复原快捷键"),true);}icon.Text=L("快速复制引用")+" · "+shortcut.Text;RefreshMenu();startup.Checked=File.Exists(StartupFile);WriteState();}finally{editing=false;}
         }
         void Reload() {
             if(busy || editing){Notify(L("正在复制或设置，请稍后重新加载"),false);return;}
@@ -286,7 +286,7 @@ public static class PortableReference {
                     if(!RegisterHotKey(window.Handle,nextId,key.Modifiers|0x4000,(uint)key.Key))throw new Exception(L("新快捷键被占用，原快捷键已保留"));
                     if(registered)UnregisterHotKey(window.Handle,hotkeyId);hotkeyId=nextId;registered=true;shortcut=key;
                 }
-                settings=next;icon.Text="Vicky Reference · "+shortcut.Text;RefreshMenu();WriteState();Notify(L("配置已更新：")+shortcut.Text,false);
+                settings=next;icon.Text=L("快速复制引用")+" · "+shortcut.Text;RefreshMenu();WriteState();Notify(L("配置已更新：")+shortcut.Text,false);
             }catch(Exception error){Localizer.SetLanguage(settings.language);Notify(error.Message,true);}
         }
         void Request(){if(disposed || busy || editing)return;busy=true;target=GetForegroundWindow();requested=DateTime.UtcNow;releaseTimer.Start();}
@@ -297,7 +297,7 @@ public static class PortableReference {
             ThreadPool.QueueUserWorkItem(s=>{completion=Capture(captured);if(!disposed)PostMessage(window.Handle,0x8003,IntPtr.Zero,IntPtr.Zero);});
         }
         void Completed(){busy=false;if(disposed)return;var result=completion;completion=null;if(result!=null){completedCount++;lastResult=result;SaveError(result);WriteState();if(!result.ok || settings.showSuccessNotification)Notify(Message(result),!result.ok);}}
-        void Notify(string text,bool error){if(!disposed)icon.ShowBalloonTip(2000,"Vicky Reference",text,error?ToolTipIcon.Warning:ToolTipIcon.Info);}
+        void Notify(string text,bool error){if(!disposed)icon.ShowBalloonTip(2000,L("快速复制引用"),text,error?ToolTipIcon.Warning:ToolTipIcon.Info);}
         protected override void Dispose(bool disposing){if(disposing && !disposed){disposed=true;releaseTimer.Stop();releaseTimer.Dispose();if(registered)UnregisterHotKey(window.Handle,hotkeyId);if(copyWait!=null)copyWait.Unregister(null);if(quitWait!=null)quitWait.Unregister(null);copy.Dispose();quit.Dispose();icon.Visible=false;icon.Dispose();window.DestroyHandle();try{File.Delete(StateFile);}catch{}}base.Dispose(disposing);}
     }
     [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();

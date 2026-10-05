@@ -14,9 +14,9 @@ class LanguageDialogTest {
             timer.Tick+=(s,e)=>{var form=Application.OpenForms.Cast<Form>().FirstOrDefault();if(form==null)return;timer.Stop();try{
                 form.Opacity=0;
                 var controls=form.Controls.Cast<Control>().ToArray();var languages=controls.OfType<ComboBox>().Single();var input=controls.OfType<TextBox>().Single();
-                Check(form.Text=="设置复制引用快捷键","Chinese dialog title missing");Record(input,Keys.Control|Keys.C);
+                Check(form.Text=="设置快速复制引用快捷键","Chinese dialog title missing");Record(input,Keys.Control|Keys.C);
                 Check(!controls.OfType<Button>().Single(b=>b.Text=="保存并启用").Enabled,"Ctrl+C accepted in Chinese");
-                languages.SelectedIndex=1;Check(form.Text=="Set Copy Reference shortcut","Language preview did not refresh title");
+                languages.SelectedIndex=1;Check(form.Text=="Set Quick Copy Reference shortcut","Language preview did not refresh title");
                 Check(!controls.OfType<Button>().Single(b=>b.Text=="Save and enable").Enabled,"Ctrl+C accepted after language switch");
                 Check(controls.OfType<Label>().Any(label=>label.Text.Contains("normal copy, cut, and paste")),"English protected shortcut guidance missing");
                 Check(controls.OfType<CheckBox>().Any(c=>c.Text=="Start with Windows"),"Startup checkbox was not translated");

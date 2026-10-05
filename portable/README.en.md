@@ -1,13 +1,13 @@
-# Vicky Reference Portable
+# Quick Copy Reference
 
 [简体中文](README.zh-CN.md) | **English**
 
-Version **1.0.5**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
+Version **1.0.6**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
 
 ## Install and choose a language
 
-1. Download `VickyReference-portable-1.0.5-en.zip` for English or `VickyReference-portable-1.0.5-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
-2. Run `VickyReference.exe`. First launch asks you to choose a language and shortcut. Click the shortcut box and press your preferred combination, such as Ctrl+Alt+Shift+R.
+1. Download `QuickCopyReference-portable-1.0.6-en.zip` for English or `QuickCopyReference-portable-1.0.6-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
+2. Run `QuickCopyReference.exe`. First launch asks you to choose a language and shortcut. Click the shortcut box and press your preferred combination, such as Ctrl+Alt+Shift+R.
 3. Save and enable it. Select text or files in a supported app, release the keys, press your shortcut, then paste.
 
 Both packages contain the same bilingual executable. Change the language immediately in **tray menu → Language → English / 简体中文**, or in the shortcut settings dialog. The choice is saved in `reference-settings.json`. Existing settings without a language use the Windows UI language; non-Chinese languages default to English. `--language=en` or `--language=zh-CN` temporarily overrides the language for that invocation.
@@ -16,7 +16,10 @@ Settings, tray menus, success/error messages, shortcut conflict explanations, sl
 
 ## Upgrade
 
-Exit the old tray app. Extract `VickyReference-update-1.0.5.zip` over the existing directory, replacing the three EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
+`QuickCopyReference.exe` is the new main entry point. `VickyReference.exe` remains an identical compatibility launcher for existing mouse mappings, scripts, and startup links. Configuration and local state directory names are preserved to retain existing preferences.
+
+
+Exit the old tray app. Extract `QuickCopyReference-update-1.0.6.zip` over the existing directory, replacing the four EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
 
 ## Shortcut conflicts
 
@@ -50,7 +53,7 @@ The app waits for shortcut release and refuses capture if the foreground window 
 
 ## VS Code bridge
 
-Choose **Extensions → Install from VSIX** and install the bundled `vicky-reference-0.1.0.vsix`, then restart VS Code. Focus a saved local file. The bridge uses Ctrl+Alt+Shift+F12 internally; this is not the global shortcut you press. SSH/WSL/other remote URIs are unsupported. The portable bridge differs from the original Stream Deck bridge; use the matching instructions.
+Choose **Extensions → Install from VSIX** and install the bundled `vicky-reference-0.1.1.vsix`, then restart VS Code. Focus a saved local file. The bridge uses Ctrl+Alt+Shift+F12 internally; this is not the global shortcut you press. SSH/WSL/other remote URIs are unsupported. The portable bridge differs from the original Stream Deck bridge; use the matching instructions.
 
 ## Privacy and troubleshooting
 
@@ -61,11 +64,11 @@ Capture runs on demand, not as continuous window monitoring. The app does not se
 ## Command line and source builds
 
 ```text
-VickyReference.exe --start
-VickyReference.exe --copy
-VickyReference.exe --status
-VickyReference.exe --quit
-VickyReference.exe --start --language=en
+QuickCopyReference.exe --start
+QuickCopyReference.exe --copy
+QuickCopyReference.exe --status
+QuickCopyReference.exe --quit
+QuickCopyReference.exe --start --language=en
 ```
 
 Resident `--copy` reports that a request was submitted; the tray notification reports the capture outcome. Without a resident instance, it captures directly and returns an exit status. `ReferenceCapture.exe --diagnose` reports status without returning document paths or selections. Direct helper invocation has no tray feedback or key-release wait.

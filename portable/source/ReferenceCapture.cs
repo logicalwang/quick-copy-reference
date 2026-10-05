@@ -475,7 +475,7 @@ public static class ReferenceCapture {
                 }
                 Thread.Sleep(40);
             }
-            throw new ReferenceError("editor_unavailable","Activate Vicky Deck Reference in VS Code and focus the text editor, then retry");
+            throw new ReferenceError("editor_unavailable","Activate Quick Copy Reference Bridge in VS Code and focus the text editor, then retry");
         } finally {
             try{if(File.Exists(response))File.Delete(response);}catch{}
             try{if(File.Exists(request) && File.ReadAllText(request).Contains(id))File.Delete(request);}catch{}

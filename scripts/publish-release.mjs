@@ -4,7 +4,7 @@ import {createHash} from 'node:crypto';
 const version=fs.readFileSync('portable/source/VickyReference.cs','utf8').match(/Version="([0-9.]+)"/)[1];
 const tag=process.env.RELEASE_TAG,repository=process.env.RELEASE_REPOSITORY,commit=process.env.RELEASE_COMMIT;
 if(tag!=='v'+version || !/^[\w.-]+\/[\w.-]+$/.test(repository??'') || !/^[a-f0-9]{40}$/.test(commit??'') || !process.env.GH_TOKEN)throw Error('Invalid release context');
-const names=[`VickyReference-portable-${version}-zh-CN.zip`,`VickyReference-portable-${version}-en.zip`,`VickyReference-update-${version}.zip`,'vicky-reference-0.1.0.vsix','SHA256SUMS.txt'];
+const names=[`QuickCopyReference-portable-${version}-zh-CN.zip`,`QuickCopyReference-portable-${version}-en.zip`,`QuickCopyReference-update-${version}.zip`,'vicky-reference-0.1.1.vsix','SHA256SUMS.txt'];
 const expected=new Map(fs.readFileSync('dist/SHA256SUMS.txt','utf8').trim().split(/\r?\n/).map(line=>{const [hash,name]=line.split('  ');return [name,hash];}));
 const digest=data=>'sha256:'+createHash('sha256').update(data).digest('hex');
 const assets=new Map(names.map(name=>[name,fs.readFileSync('dist/'+name)]));
@@ -26,7 +26,7 @@ if(release && !release.draft){
  if(release.assets.length!==names.length || names.some(name=>!release.assets.some(a=>a.name===name && a.state==='uploaded' && a.digest===digest(assets.get(name)))))throw Error('Existing public release differs from the checked build');
  console.log('Matching Release is already public: '+release.html_url);
 }else{
- if(!release)release=await request(api+'/releases','POST',{tag_name:tag,target_commitish:commit,name:`Copy Reference Portable v${version} · 简体中文 / English`,body:fs.readFileSync(`RELEASE-v${version}.md`,'utf8'),draft:true,prerelease:false});
+ if(!release)release=await request(api+'/releases','POST',{tag_name:tag,target_commitish:commit,name:`Quick Copy Reference v${version} · 简体中文 / English`,body:fs.readFileSync(`RELEASE-v${version}.md`,'utf8'),draft:true,prerelease:false});
  for(const name of names){
   const data=assets.get(name);let asset=release.assets.find(a=>a.name===name);
   if(!asset)asset=await request(release.upload_url.split('{')[0]+'?name='+encodeURIComponent(name),'POST',data,name.endsWith('.txt')?'text/plain':'application/zip');
