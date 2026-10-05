@@ -1,0 +1,33 @@
+{
+  "name": "vicky-reference",
+  "displayName": "Vicky Deck Reference",
+  "description": "Provide active file and selection line references to your Stream Deck button.",
+  "publisher": "vicky-local",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "main": "./extension.js",
+  "extensionKind": [
+    "ui"
+  ],
+  "activationEvents": [
+    "onCommand:vickyReference.capture"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vickyReference.capture",
+        "title": "Vicky Deck: Capture File Reference"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "vickyReference.capture",
+        "key": "ctrl+alt+shift+f12",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "license": "SEE LICENSE IN LICENSE"
+}

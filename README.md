@@ -1,6 +1,18 @@
 # Copy Reference / 复制引用
 
-一个 Windows Stream Deck 按键：读取当前聚焦的文件、文档或网页，把来源和可用的选中内容写成**单行 Markdown 链接**并复制到剪贴板。适合粘贴给 Codex，也能在普通 Markdown 中使用。
+Windows 复制引用工具：读取当前聚焦的文件、文档或网页，把来源和可用的选中内容写成**单行 Markdown 链接**并复制到剪贴板。适合粘贴给 Codex，也能在普通 Markdown 中使用。
+
+提供两种入口：Stream Deck 插件，以及无需 Stream Deck 的键盘／鼠标便携版。新版本 **v1.0.4 发布的是便携版**；Stream Deck 插件仍可从 [v0.1.0](../../releases/tag/v0.1.0) 获取。
+
+## 便携版 v1.0.4
+
+从 [Releases](../../releases) 下载 `VickyReference-portable-1.0.4.zip`，解压后启动 `VickyReference.exe`，首次启动自由设置快捷键。鼠标侧键可映射为该快捷键，或直接运行 `CopyReference.exe`。支持托盘设置开机启动，无需 Node.js、npm 或 Stream Deck。
+
+已使用旧便携版的用户：退出托盘程序，解压 `VickyReference-update-1.0.4.zip` 覆盖三个 EXE，保留原来的 `reference-settings.json`，再启动程序。完整包使用初始配置，不含任何已保存的个人快捷键。
+
+本版修复 Office／MarkPad 读取和错误提示，完善常用快捷键冲突提示并保护 Ctrl+C／X／V。PowerPoint 编辑窗口正确带幻灯片页码，支持选中文字和幻灯片浏览视图多选；放映／演讲者视图暂未适配。
+
+便携版 VS Code 支持需安装包内的 `vicky-reference-0.1.0.vsix`。它与 Stream Deck 版使用的桥接扩展不同，请按各自说明安装。源码、构建和详细限制见 [portable/README.md](portable/README.md)。
 
 例如：
 
@@ -24,9 +36,9 @@
 
 未保存、非本地或无法确定路径的文档会提示失败。部分应用无法公开选中文本，此时只复制来源。按钮只在按下时运行，不持续监控窗口；结果留在本机剪贴板，不上传到网络。运行时可能短暂切换浏览器地址栏或打开并取消记事本“另存为”对话框，以读取可靠的来源地址。
 
-## 安装
+## Stream Deck 版安装
 
-需要 Windows 10/11、Stream Deck 7.1+。从 [Releases](../../releases) 下载 `dev.vicky.copyreference.streamDeckPlugin` 并双击安装，然后把“复制引用”动作拖到一个按键上。若尚无 Release，可按“从源码构建”自行打包。
+需要 Windows 10/11、Stream Deck 7.1+。从 [v0.1.0 Release](../../releases/tag/v0.1.0) 下载 `dev.vicky.copyreference.streamDeckPlugin` 并双击安装，然后把“复制引用”动作拖到一个按键上。
 
 VS Code 的行号功能需要安装仓库中的 `vscode-reference` 桥接扩展。运行 `powershell -ExecutionPolicy Bypass -File .\scripts\install-vscode-bridge.ps1`，然后**完全重启** VS Code。该脚本只复制桥接扩展到当前用户的 VS Code 扩展目录。若键位 `Ctrl+Alt+Shift+F12` 已被占用，请改动扩展中的键位，并同步更改 `ReferenceCapture.cs` 中的发送键位。桥接扩展目前仅支持本地 `file:` 文件。
 

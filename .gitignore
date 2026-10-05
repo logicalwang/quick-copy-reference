@@ -5,3 +5,10 @@ dev.vicky.copyreference.sdPlugin/bin/
 dev.vicky.copyreference.sdPlugin/native/
 *.log
 .DS_Store
+dist/
+portable/*.exe
+portable/*.vsix
+portable/*.pdb
+portable/*.log
+portable/tests/*.exe
+portable/tests/*.pdb
