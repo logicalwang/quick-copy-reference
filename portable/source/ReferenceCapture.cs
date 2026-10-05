@@ -29,6 +29,7 @@ public static class ReferenceCapture {
     [STAThread]
     public static int Main(string[] args) {
         try {
+            Localizer.Initialize(AppDomain.CurrentDomain.BaseDirectory,ref args);
             if (args.Length != 1) throw new ReferenceError("usage", "Expected --copy, --collect, --diagnose or --format");
             if (args[0] == "--format") {
                 var req=Json.Deserialize<FormatRequest>(new StreamReader(Console.OpenStandardInput(),Encoding.UTF8).ReadToEnd());
@@ -195,7 +196,7 @@ public static class ReferenceCapture {
         if(value.Length<=FocusLimit) return value;
         int length=FocusLimit;
         if(char.IsHighSurrogate(value[length-1])) length--;
-        return value.Substring(0,length)+" [选区过长，已截断]";
+        return value.Substring(0,length)+Localizer.Text(" [选区过长，已截断]");
     }
     static string SelectionFrom(AutomationElement element) {
         try {
@@ -273,14 +274,14 @@ public static class ReferenceCapture {
                     if(cut)break;
                 }
                 item.location=(string)selection.Parent.Name+"!"+string.Join(", ",locations);
-                item.focus=ClipFocus(string.Join("\n",pieces)+(cut?"\n[选区过大，仅包含前 200 个单元格或 12000 字符]":""));
+                item.focus=ClipFocus(string.Join("\n",pieces)+(cut?Localizer.Text("\n[选区过大，仅包含前 200 个单元格或 12000 字符]"):""));
             } else {
-                try {item.location="幻灯片 "+((int)window.View.Slide.SlideIndex).ToString();}catch{}
+                try {item.location=Localizer.Text("幻灯片 ")+((int)window.View.Slide.SlideIndex).ToString();}catch{}
                 dynamic selection=window.Selection;
                 int type=(int)selection.Type;
                 if(type==1) {
                     var slides=new List<int>();foreach(dynamic slide in selection.SlideRange)slides.Add((int)slide.SlideIndex);
-                    if(slides.Count>0)item.location="幻灯片 "+string.Join(", ",slides.Select(n=>n.ToString()).ToArray());
+                    if(slides.Count>0)item.location=Localizer.Text("幻灯片 ")+string.Join(", ",slides.Select(n=>n.ToString()).ToArray());
                 }
                 if(type==3) item.focus=ClipFocus((string)selection.TextRange.Text);
                 else if(type==2) {

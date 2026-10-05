@@ -1,5 +1,6 @@
 {
   "hotkey": "Ctrl+Alt+Shift+R",
   "showSuccessNotification": true,
-  "configured": false
+  "configured": false,
+  "language": "auto"
 }

@@ -6,12 +6,15 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 function invoke(name,args,input){const r=spawnSync(path.join(root,name),args,{input,encoding:'utf8',windowsHide:true,timeout:10000});assert.equal(r.error,undefined);assert.equal(r.status,0,r.stdout+r.stderr);return JSON.parse(r.stdout);}
-function format(items){return invoke('ReferenceCapture.exe',['--format'],JSON.stringify({items}));}
+function format(items,language='zh-CN'){return invoke('ReferenceCapture.exe',['--format','--language='+language],JSON.stringify({items}));}
 test('default configuration asks for a shortcut and contains no saved user preferences',()=>{
- assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'reference-settings.json'),'utf8')),{hotkey:'Ctrl+Alt+Shift+R',showSuccessNotification:true,configured:false});
+ assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'reference-settings.json'),'utf8')),{hotkey:'Ctrl+Alt+Shift+R',showSuccessNotification:true,configured:false,language:'auto'});
 });
 test('portable shortcut parsing, clipboard-shortcut protection and actual registration probe',()=>{
- const reply=invoke('VickyReference.exe',['--self-test']);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.4');
+ for(const language of ['zh-CN','en']){const reply=invoke('VickyReference.exe',['--self-test','--language='+language]);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.5');assert.equal(reply.language,language);assert.ok(reply.protectedShortcut.includes('Ctrl+C'));assert.equal(reply.menuLabel,language==='en'?'View latest error':'查看最近错误');assert.equal(reply.successMessage,language==='en'?'Reference copied. Ready to paste.':'已复制引用，可以粘贴了');}
+});
+test('English truncation marker is localized while Chinese document text stays intact',()=>{
+ const result=format([{name:'文档.md',path:'C:/Example/文档.md',focus:'中文'.repeat(6500)}],'en');assert.ok(result.text.includes('中文'));assert.ok(result.text.includes('selection truncated'));assert.ok(!result.text.includes('选区过长'));
 });
 test('Chinese paths and focus stay readable, preserving literal filename underscores',()=>{
  const result=format([{name:'Q2_协同分析.md',path:'C:/Example/OneDrive - Example/资料/Q2_协同分析.md',focus:'三种量'}]);

@@ -1,0 +1,99 @@
+name: Windows build and tests
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Build, test both languages, and package
+    runs-on: windows-2025
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.13'
+      - name: Install plugin build dependencies
+        run: npm ci
+      - name: Build original Stream Deck plugin
+        run: npm run build
+      - name: Typecheck plugin
+        run: npm run typecheck
+      - name: Test plugin reference formats
+        run: npm test
+      - name: Validate plugin manifest
+        run: npm run validate
+      - name: Verify plugin packaging
+        run: npm run pack -- --force
+      - name: Build bilingual portable executables
+        run: '& .\portable\source\build.ps1'
+      - name: Test both languages, shortcuts, and reference formats
+        run: node --test .\portable\tests\portable.test.mjs
+      - name: Test unambiguous document adapters
+        run: '& .\scripts\test-portable-adapters.ps1'
+      - name: Test bilingual settings dialogs and legacy configuration
+        run: '& .\scripts\test-portable-dialog.ps1'
+      - name: Package Chinese and English portable editions
+        run: python .\scripts\package-portable.py
+      - name: Verify package contents, privacy, languages, and hashes
+        run: python .\scripts\verify-portable-package.py
+      - name: Retain checked portable release artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: portable-release
+          path: |
+            dist/VickyReference-portable-*.zip
+            dist/VickyReference-update-*.zip
+            dist/vicky-reference-0.1.0.vsix
+            dist/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    name: Publish checked bilingual portable Release
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: windows
+    runs-on: windows-2025
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: portable-release
+          path: dist
+      - name: Publish CI artifacts after verifying hashes and tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_COMMIT: ${{ github.sha }}
+          RELEASE_REPOSITORY: ${{ github.repository }}
+        run: node .\scripts\publish-release.mjs
