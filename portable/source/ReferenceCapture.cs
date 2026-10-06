@@ -19,6 +19,8 @@ public static class ReferenceCapture {
     static string app;
     static uint initialSequence;
     static string strategy;
+    static string browserSelection;
+    static bool captureSelection;
     static readonly List<string> diagnostics=new List<string>();
     public class Item { public string name { get; set; } public string path { get; set; } public string focus { get; set; } public string location { get; set; } public int startLine { get; set; } public int endLine { get; set; } }
     public class EditorReply { public bool ok {get;set;} public List<Item> items {get;set;} public string message {get;set;} }
@@ -38,6 +40,7 @@ public static class ReferenceCapture {
             }
             if(args[0] != "--copy" && args[0] != "--collect" && args[0] != "--diagnose") throw new ReferenceError("usage", "Unknown command");
             foreground=GetForegroundWindow(); initialSequence=GetClipboardSequenceNumber();
+            captureSelection=args[0]!="--diagnose";
             if(foreground==IntPtr.Zero) throw new ReferenceError("no_window", "No foreground window");
             uint pid; GetWindowThreadProcessId(foreground,out pid);
             app=Process.GetProcessById((int)pid).ProcessName.ToLowerInvariant();
@@ -45,6 +48,7 @@ public static class ReferenceCapture {
             // Office has its own selection API. A generic UIA tree scan can block on
             // providers and must not prevent a valid document reference.
             string selectedText=(args[0]!="--diagnose" && app!="code" && app!="code - insiders" && app!="winword" && app!="excel" && app!="powerpnt" && SupportsTextSelection(app)) ? ReadSelection() : null;
+            if(IsBrowser(app))browserSelection=selectedText;
             var items=Collect();
             if(args[0]=="--diagnose"){EnsureForeground();Reply(new{ok=true,app=app,count=items.Count,strategy=strategy,diagnostics=diagnostics.ToArray()});return 0;}
             if(items.Count==1 && items[0].startLine==0 && string.IsNullOrWhiteSpace(items[0].focus)) items[0].focus=selectedText;
@@ -231,9 +235,9 @@ public static class ReferenceCapture {
                 }
                 if(!belongs) return null;
             }
-            // Address bars, find boxes and application search fields are not document selections.
+            // Do not mistake a document title such as "Research paper" for a search box.
             string id=focused.Current.AutomationId ?? "", name=focused.Current.Name ?? "";
-            if(Regex.IsMatch(id+" "+name,@"omnibox|addressEditBox|urlbar|search|搜索|地址|网址|查找",RegexOptions.IgnoreCase)) return null;
+            if(IsBrowserChromeField(focused.Current.ControlType==ControlType.Edit || focused.Current.ControlType==ControlType.ComboBox,id,name)) return null;
             string direct=SelectionFrom(focused);if(direct!=null) return direct;
             // Find document providers, pruning their descendants to avoid duplicate ranges.
             var queue=new Queue<AutomationElement>();queue.Enqueue(AutomationElement.FromHandle(foreground));
@@ -242,8 +246,10 @@ public static class ReferenceCapture {
                 var e=queue.Dequeue();
                 if(e.Current.IsPassword) continue;
                 if(e.Current.ControlType==ControlType.Document) {
-                    var selected=SelectionFrom(e);if(selected!=null) selections.Add(selected);
-                    continue;
+                    var selected=SelectionFrom(e);
+                    if(selected!=null){selections.Add(selected);continue;}
+                    // A browser document can contain another document provider (PDF/iframe).
+                    // Only prune after reading a real selection, not at an empty container.
                 }
                 var children=e.FindAll(TreeScope.Children,Condition.TrueCondition);
                 foreach(AutomationElement child in children)queue.Enqueue(child);
@@ -328,6 +334,8 @@ public static class ReferenceCapture {
         candidates=candidates.Distinct().ToList();
         if(candidates.Count!=1) throw new ReferenceError("browser_unavailable","Cannot identify the browser address bar; finish editing the address and try again");
         string url=candidates[0];
+        string selection=browserSelection;
+        if(captureSelection && selection==null)selection=CopyBrowserSelection(IsPdfAddress(url));
         // Chromium elides the scheme until the omnibox has keyboard focus.
         // Read the actual expanded value, never assume HTTPS or touch the clipboard.
         if(!HasBrowserScheme(url)) {
@@ -360,14 +368,58 @@ public static class ReferenceCapture {
         } else strategy="address-value";
         var title=WindowTitle(foreground);
         title=Regex.Replace(title,@"\s+[-–—]\s+(Google Chrome|Microsoft Edge|Mozilla Firefox|Brave)$","",RegexOptions.IgnoreCase);
-        return new List<Item>{ToItem(url,title)};
+        var item=ToItem(url,title);item.focus=selection;
+        return new List<Item>{item};
+    }
+    static bool IsBrowser(string process){return new[]{"chrome","msedge","brave","firefox"}.Contains(process);}
+    public static bool IsBrowserChromeField(bool editable,string id,string name){
+        return editable && (Regex.IsMatch(id??"",@"omnibox|addressEditBox|urlbar|^(search|find)",RegexOptions.IgnoreCase) ||
+            Regex.IsMatch(name??"",@"\b(address|search|find|recherche|adressleiste)\b|搜索|地址|网址|查找",RegexOptions.IgnoreCase));
+    }
+    static bool IsPdfAddress(string value){
+        if(string.IsNullOrWhiteSpace(value))return false;
+        value=value.Split('?', '#')[0];try{value=Uri.UnescapeDataString(value);}catch{}
+        return value.EndsWith(".pdf",StringComparison.OrdinalIgnoreCase);
+    }
+    static bool BrowserDocumentFocused(bool pdfDocument){
+        var current=AutomationElement.FocusedElement;bool document=false;
+        for(int n=0;current!=null && n<40;n++){
+            var info=current.Current;
+            if(info.IsPassword || info.ControlType==ControlType.ToolBar || info.ControlType==ControlType.Menu ||
+                IsBrowserChromeField(info.ControlType==ControlType.Edit || info.ControlType==ControlType.ComboBox,info.AutomationId,info.Name))return false;
+            document|=info.ControlType==ControlType.Document || (pdfDocument && info.ClassName=="Chrome_RenderWidgetHostHWND");
+            if(info.NativeWindowHandle==foreground.ToInt32())return document;
+            current=TreeWalker.ControlViewWalker.GetParent(current);
+        }
+        return false;
+    }
+    static bool BrowserOwnsClipboard(){
+        IntPtr owner=GetClipboardOwner();if(owner==IntPtr.Zero)return false;
+        uint pid;GetWindowThreadProcessId(owner,out pid);
+        try{return Process.GetProcessById((int)pid).ProcessName.Equals(app,StringComparison.OrdinalIgnoreCase);}catch{return false;}
+    }
+    static string CopyBrowserSelection(bool pdfDocument){
+        try{
+            EnsureForeground();if(!BrowserDocumentFocused(pdfDocument))return null;
+            // PDF plugins may not expose UIA TextPattern. Ask the focused document to
+            // copy its existing selection before the address bar can steal that focus.
+            string text=ProbeCopiedText(()=>SendKeys.SendWait("^c"),()=>{EnsureForeground();if(!BrowserDocumentFocused(pdfDocument))throw new ReferenceError("focus_changed","Document focus changed; retry");},BrowserOwnsClipboard,false);
+            if(!string.IsNullOrWhiteSpace(text)){diagnostics.Add("browser-selection-copy");return ClipFocus(text);}
+        }catch(ReferenceError){throw;}catch(Exception error){RecordFailure("browser-selection-copy",error);}
+        return null;
     }
     static string CopyBrowserAddress(AutomationElement address) {
         EnsureForeground();
         if(!address.Current.HasKeyboardFocus)throw new ReferenceError("focus_changed","Address bar lost focus");
+        string value=ProbeCopiedText(()=>{SendKeys.SendWait("^l");EnsureForeground();SendKeys.SendWait("^c");},()=>{EnsureForeground();if(!address.Current.HasKeyboardFocus)throw new ReferenceError("focus_changed","Address bar lost focus");},BrowserOwnsClipboard,true);
+        if(!HasBrowserScheme(value))throw new ReferenceError("browser_unavailable","Browser copied an unsupported address");
+        return value.Trim();
+    }
+    static string ProbeCopiedText(Action copy,Action ensureTarget,Func<bool> clipboardOwned,bool required){
+        ensureTarget();
         if(GetClipboardSequenceNumber()!=initialSequence)throw new ReferenceError("clipboard_changed","Clipboard changed; retry");
         var original=Clipboard.GetDataObject();var backup=new DataObject();bool empty=original==null;
-        // Materialize all formats before Chrome replaces the clipboard (no delayed reads).
+        // Materialize all formats before the browser replaces the clipboard (no delayed reads).
         if(original!=null) foreach(string format in original.GetFormats(false)) {
             // Framework GetData(Html) uses the system code page and can corrupt Chinese
             // during restore. Preserve the real UTF-8 clipboard bytes instead.
@@ -377,32 +429,34 @@ public static class ReferenceCapture {
             if(stream!=null)value=new MemoryStream(stream.ToArray());
             backup.SetData(format,false,value);
         }
-        uint owned=0;
+        uint owned=0;bool started=false;
         try {
-            EnsureForeground();
+            ensureTarget();
             if(GetClipboardSequenceNumber()!=initialSequence)throw new ReferenceError("clipboard_changed","Clipboard changed; retry");
-            // Ctrl+L selects the entire canonical address. Ctrl+C uses Chrome's URL copy rules.
-            SendKeys.SendWait("^l");EnsureForeground();SendKeys.SendWait("^c");
+            started=true;copy();
             for(int attempt=0;attempt<20;attempt++) {
                 uint current=GetClipboardSequenceNumber();
-                if(current!=initialSequence){owned=current;break;}
-                EnsureForeground();Thread.Sleep(25);
+                if(current!=initialSequence){
+                    if(!clipboardOwned())throw new ReferenceError("clipboard_changed","Another application changed the clipboard; retry");
+                    owned=current;break;
+                }
+                ensureTarget();Thread.Sleep(25);
             }
-            if(owned==0)throw new ReferenceError("browser_unavailable","Browser did not copy its address");
-            EnsureForeground();
-            string value=Clipboard.GetText(TextDataFormat.UnicodeText).Trim();
+            if(owned==0){if(required)throw new ReferenceError("browser_unavailable","Browser did not copy its address");return null;}
+            ensureTarget();
+            string value=Clipboard.ContainsText(TextDataFormat.UnicodeText)?Clipboard.GetText(TextDataFormat.UnicodeText):null;
             if(GetClipboardSequenceNumber()!=owned)throw new ReferenceError("clipboard_changed","Clipboard changed; retry");
-            if(!HasBrowserScheme(value))throw new ReferenceError("browser_unavailable","Browser copied an unsupported address");
             return value;
         } finally {
+            if(started && owned==0 && GetClipboardSequenceNumber()!=initialSequence && clipboardOwned())owned=GetClipboardSequenceNumber();
             // Never overwrite a subsequent clipboard update from the user or another app.
-            if(owned!=0 && GetClipboardSequenceNumber()==owned) {
+            if(owned!=0 && GetClipboardSequenceNumber()==owned && clipboardOwned()) {
                 if(empty)Clipboard.Clear();else Clipboard.SetDataObject(backup,true,5,40);
                 initialSequence=GetClipboardSequenceNumber();
             }
         }
     }
-    static bool HasBrowserScheme(string value) {return Regex.IsMatch(value,@"^(https?://|file:/)",RegexOptions.IgnoreCase);}
+    static bool HasBrowserScheme(string value) {return !string.IsNullOrWhiteSpace(value) && Regex.IsMatch(value,@"^(https?://|file:/)",RegexOptions.IgnoreCase);}
     static List<Item> Notepad() {
         // New Notepad versions may expose the active tab path directly.
         try { return Editor(); } catch(ReferenceError) {}
@@ -723,6 +777,7 @@ public static class ReferenceCapture {
     [DllImport("user32.dll")] static extern IntPtr GetForegroundWindow();
     [DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr h,out uint pid);
     [DllImport("user32.dll")] static extern uint GetClipboardSequenceNumber();
+    [DllImport("user32.dll")] static extern IntPtr GetClipboardOwner();
     [DllImport("user32.dll")] static extern bool OpenClipboard(IntPtr owner);
     [DllImport("user32.dll")] static extern bool CloseClipboard();
     [DllImport("user32.dll",CharSet=CharSet.Unicode)] static extern uint RegisterClipboardFormat(string name);

@@ -1,16 +1,25 @@
 # Quick Copy Reference
 
-[简体中文](README.zh-CN.md) | **English**
+**Copy “this passage + its source” in one action. Paste it into an AI chat, notes, or Markdown.**
+
+| What it does | Copies a reference from the focused file, web page, or PDF, with available selected text and locations |
+| --- | --- |
+| How to use it | Download and extract → Run `QuickCopyReference.exe` → Choose a hotkey → Select, press, paste |
+| Why use it | Share the passage, code, or file you want to discuss together with a link to its source, without copying text, finding paths, and assembling links separately |
+
+```text
+Select in a PDF: the conclusion I want to review
+Press your hotkey, then paste:
+[appendix.pdf: the conclusion I want to review](C:/Example/appendix.pdf)
+```
+
+**Windows 10/11** · English / 简体中文 · Keyboard / mouse side button / scripts · Stream Deck optional
+
+[⬇ Download portable app](https://github.com/logicalwang/quick-copy-reference/releases/latest) · [简体中文](README.zh-CN.md) · [English setup guide](portable/README.en.md)
 
 [![Windows build and tests](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml/badge.svg)](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml)
 
-**Press a hotkey to copy what you are looking at as a link with its source and selected text.**
-
-For **Windows 10/11**. Use a global keyboard shortcut, mouse side button, or script command to read the focused supported app. Paste the reference into Codex, Markdown documents, notes, or another app that accepts text or links. Simplified Chinese and English interfaces are included. Stream Deck is optional.
-
-```text
-Select text or files → Press your hotkey or mouse button → Paste a source link
-```
+Capture sources from supported apps and paste into any app that accepts text or links. Available selections and locations depend on the source app; see the support table below.
 
 ## Get started in 30 seconds
 
@@ -40,7 +49,7 @@ The global shortcut is available across Windows; automatic source capture suppor
 | --- | --- |
 | File Explorer | Selected files/folders, including multi-selection |
 | Chrome, Edge, Brave, Firefox | Page URL and available selected text |
-| Edge local PDF | Local PDF path and available selected text |
+| Chrome / Edge built-in PDF viewer | Local PDF path or online URL, with copyable selected text |
 | Word, Excel, PowerPoint | Saved file, available selection, cells, or slide location |
 | Notepad, MarkPad | Saved file and available selected text |
 | VS Code | Saved local file and selected line range; bridge required |
@@ -63,9 +72,9 @@ Keep the source app focused when triggering capture; scripts need to run in the 
 
 Download from [Releases](https://github.com/logicalwang/quick-copy-reference/releases):
 
-- `QuickCopyReference-portable-1.0.6-en.zip`: English by default.
-- `QuickCopyReference-portable-1.0.6-zh-CN.zip`: Simplified Chinese by default.
-- `QuickCopyReference-update-1.0.6.zip`: update the four EXEs and preserve your settings.
+- `QuickCopyReference-portable-1.0.7-en.zip`: English by default.
+- `QuickCopyReference-portable-1.0.7-zh-CN.zip`: Simplified Chinese by default.
+- `QuickCopyReference-update-1.0.7.zip`: update the four EXEs and preserve your settings.
 
 Extract the whole folder and run `QuickCopyReference.exe`. First launch asks you to choose a language and your own shortcut. The same bilingual executable is included in both downloads. Switch languages immediately in the settings dialog or **tray menu → Language**. Mouse software can map a side button to the shortcut or run `CopyReference.exe` directly. Optional startup and success notifications are configurable. Windows 10/11 with .NET Framework 4.x is required; running the portable app needs no Stream Deck, Node.js, or npm.
 
@@ -88,11 +97,12 @@ npm run pack -- --force
 node --test .\portable\tests\portable.test.mjs
 & .\scripts\test-portable-adapters.ps1
 & .\scripts\test-portable-dialog.ps1
+& .\scripts\test-browser-selection.ps1
 python .\scripts\package-portable.py
 python .\scripts\verify-portable-package.py
 ```
 
-[GitHub Actions](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml) runs these checks on main, pull requests, manual dispatch, and version tags using Windows. Successful builds retain artifacts; matching version tags publish both portable language packages only after all checks pass. CI tests compilation, formatting, shortcut safety, bilingual dialogs, legacy settings, and packaging; it does not install Office or validate real Office/browser capture. Live desktop verification remains necessary.
+[GitHub Actions](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml) runs these checks on main, pull requests, manual dispatch, and version tags using Windows. Successful builds retain artifacts; matching version tags publish both portable language packages only after all checks pass. CI tests compilation, formatting, shortcut safety, bilingual dialogs, legacy settings, browser-selection copying and clipboard restoration, and packaging; it does not install Office or validate real Office/browser capture. Live desktop verification remains necessary.
 
 Release packaging uses a reviewed allowlist and fresh configuration. Private documents, logs, clipboard contents, runtime state, and debug symbols are excluded. `SHA256SUMS.txt` provides download hashes.
 

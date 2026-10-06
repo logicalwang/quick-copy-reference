@@ -2,11 +2,11 @@
 
 **简体中文** | [English](README.en.md)
 
-版本 **1.0.6**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
+版本 **1.0.7**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
 
 ## 安装与语言
 
-1. 中文下载 `QuickCopyReference-portable-1.0.6-zh-CN.zip`，英文下载 `QuickCopyReference-portable-1.0.6-en.zip`。完整解压到可写、准备长期使用的目录。
+1. 中文下载 `QuickCopyReference-portable-1.0.7-zh-CN.zip`，英文下载 `QuickCopyReference-portable-1.0.7-en.zip`。完整解压到可写、准备长期使用的目录。
 2. 启动 `QuickCopyReference.exe`，首次选择语言和快捷键。点击输入框，直接按喜欢的组合键，例如 Ctrl+Alt+Shift+R。
 3. 保存并启用。在支持的软件中选中文字或文件，松开按键，按快捷键，再粘贴。
 
@@ -18,8 +18,7 @@
 
 `QuickCopyReference.exe` 是新的主入口；旧名 `VickyReference.exe` 保留为同一程序的兼容入口，原鼠标映射、脚本和开机启动仍可使用。内部配置和本地状态目录沿用旧名称，保留已有偏好。
 
-
-先退出旧托盘程序，用 `QuickCopyReference-update-1.0.6.zip` 覆盖四个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
+先退出旧托盘程序，用 `QuickCopyReference-update-1.0.7.zip` 覆盖四个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
 
 ## 快捷键冲突
 
@@ -42,7 +41,7 @@
 | Excel | 已保存工作簿、工作表／单元格位置及可读取的单元格文字 |
 | PowerPoint | 已保存演示文稿、当前页、所选文字／形状；幻灯片浏览视图多选 |
 | Chrome、Edge、Brave、Firefox | 网页地址与可读取的选中文字 |
-| Edge 本地 PDF | PDF 文件路径与可读取的选中文字 |
+| Chrome／Edge 内置 PDF 阅读器 | 本地 PDF 路径或在线地址，与可复制的所选文字 |
 | 记事本、MarkPad | 已保存文件与可读取的选中文字 |
 | VS Code | 本地已保存文件及选区行号，需安装桥接扩展 |
 | Notepad++、Typora、MarkText、Cursor | 取决于标题或标签是否提供完整路径 |
@@ -50,6 +49,10 @@
 PowerPoint 放映／演讲者视图暂未适配，请返回编辑窗口。未保存文件、受保护视图、高权限应用、不可用路径及不暴露元数据的软件版本可能无法读取。不会自动开启编辑或改变安全设置；来源不确定时拒绝猜测。接收应用决定粘贴 HTML 还是 Markdown。
 
 程序等待快捷键释放，期间前台窗口改变则拒绝读取。浏览器可能短暂聚焦地址栏；经典记事本可能打开并取消另存为，以取得路径。这些操作不保存文档。
+
+## 浏览器中的 PDF 选区
+
+先在 PDF 正文中用鼠标选中文字，再按快捷键。程序会在读取地址之前取得选区，将文字写入同一个引用链接的标签。若阅读器未通过辅助功能公开选区，会尝试复制当前选区并恢复原剪贴板；没有选区时不会把剪贴板旧文字当成所选内容。扫描图片、禁止复制的 PDF 或未完成文字识别的页面可能只能复制来源。此功能读取当前文字选区，不提取已保存的高亮批注，也不保留原文的加粗等排版。
 
 ## VS Code 桥接
 
@@ -80,6 +83,7 @@ QuickCopyReference.exe --start --language=zh-CN
 node --test .\portable\tests\portable.test.mjs
 & .\scripts\test-portable-adapters.ps1
 & .\scripts\test-portable-dialog.ps1
+& .\scripts\test-browser-selection.ps1
 python .\scripts\package-portable.py
 python .\scripts\verify-portable-package.py
 ```

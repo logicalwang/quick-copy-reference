@@ -1,16 +1,25 @@
 # Quick Copy Reference · 快速复制引用
 
-**简体中文** | [English](README.en.md)
+**把「这段内容 + 它的出处」一次复制，直接贴给 AI、笔记或 Markdown 文档。**
+
+| 做什么 | 从当前聚焦的文件、网页或 PDF 复制引用，可包含所选文字和位置 |
+| --- | --- |
+| 怎么用 | 下载解压 → 运行 `QuickCopyReference.exe` → 自定义快捷键 → 选中内容、按键、粘贴 |
+| 为什么用 | 讨论一个段落、代码或文件时，让对方看到关注点并能找到原始来源，省去分别复制文字、查找路径和拼接链接的操作 |
+
+```text
+你在 PDF 中选中：需要复核的结论
+按下自己的快捷键，粘贴得到：
+[appendix.pdf: 需要复核的结论](C:/Example/appendix.pdf)
+```
+
+**Windows 10／11** · 简体中文／English · 键盘／鼠标侧键／脚本 · Stream Deck 可选
+
+[⬇ 下载便携版](https://github.com/logicalwang/quick-copy-reference/releases/latest) · [English](README.en.md) · [中文使用指南](portable/README.zh-CN.md)
 
 [![Windows 构建与测试](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml/badge.svg)](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml)
 
-**按一下快捷键，把正在看的文件、网页和选中文字，复制成带出处的引用链接。**
-
-适用于 **Windows 10／11**，通过全局快捷键、鼠标侧键或脚本调用，从当前聚焦的受支持应用取得来源。复制结果可粘贴到 Codex、Markdown 文档、笔记或其他接收文本／链接的软件中。提供简体中文和英文界面，运行不需要 Stream Deck。
-
-```text
-选中文字／文件 → 按快捷键或鼠标侧键 → 粘贴带出处的引用
-```
+从受支持的应用读取来源，复制结果可粘贴到任何接收文本／链接的软件。选区和位置取决于应用提供的信息，具体支持范围见下表。
 
 ## 30 秒开始使用
 
@@ -40,7 +49,7 @@
 | --- | --- |
 | 资源管理器 | 所选文件／文件夹，支持多选 |
 | Chrome、Edge、Brave、Firefox | 网页地址及可读取的所选文字 |
-| Edge 本地 PDF | PDF 路径及可读取的所选文字 |
+| Chrome／Edge 内置 PDF 阅读器 | 本地 PDF 路径或在线地址，及可复制的所选文字 |
 | Word、Excel、PowerPoint | 已保存文件、可读取选区、单元格或幻灯片位置 |
 | 记事本、MarkPad | 已保存文件及可读取选区 |
 | VS Code | 本地已保存文件和选区行号，需桥接扩展 |
@@ -63,9 +72,9 @@
 
 从 [Releases](https://github.com/logicalwang/quick-copy-reference/releases) 下载：
 
-- `QuickCopyReference-portable-1.0.6-zh-CN.zip`：默认简体中文。
-- `QuickCopyReference-portable-1.0.6-en.zip`：默认英文。
-- `QuickCopyReference-update-1.0.6.zip`：覆盖四个 EXE，保留原配置。
+- `QuickCopyReference-portable-1.0.7-zh-CN.zip`：默认简体中文。
+- `QuickCopyReference-portable-1.0.7-en.zip`：默认英文。
+- `QuickCopyReference-update-1.0.7.zip`：覆盖四个 EXE，保留原配置。
 
 完整解压后运行 `QuickCopyReference.exe`，首次选择语言和自定义快捷键。两个下载包使用同一个双语程序，可在设置窗口或 **托盘菜单 → 语言** 立即切换。鼠标侧键可映射为组合键，或直接运行 `CopyReference.exe`。可选择开机启动、成功提示。需要 Windows 10／11 与 .NET Framework 4.x；运行便携版不需要 Stream Deck、Node.js 或 npm。
 
@@ -88,11 +97,12 @@ npm run pack -- --force
 node --test .\portable\tests\portable.test.mjs
 & .\scripts\test-portable-adapters.ps1
 & .\scripts\test-portable-dialog.ps1
+& .\scripts\test-browser-selection.ps1
 python .\scripts\package-portable.py
 python .\scripts\verify-portable-package.py
 ```
 
-[GitHub Actions](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml) 在 main、PR、手动触发和版本标签上执行 Windows 检查。通过后保存构建产物；与源码版本匹配的标签会在所有检查通过后发布中英文便携包。CI 检查编译、引用格式、快捷键保护、双语设置窗口、旧配置兼容和打包；不安装 Office，也不验证真实 Office／浏览器读取，仍需桌面实测。
+[GitHub Actions](https://github.com/logicalwang/quick-copy-reference/actions/workflows/build.yml) 在 main、PR、手动触发和版本标签上执行 Windows 检查。通过后保存构建产物；与源码版本匹配的标签会在所有检查通过后发布中英文便携包。CI 检查编译、引用格式、快捷键保护、双语设置窗口、旧配置兼容、浏览器选区复制与剪贴板恢复，以及打包；不安装 Office，也不验证真实 Office／浏览器读取，仍需桌面实测。
 
 发布打包使用明确的文件清单与首次启动配置，排除私人文档、日志、剪贴板、运行状态和调试符号。下载校验值在 `SHA256SUMS.txt`。
 

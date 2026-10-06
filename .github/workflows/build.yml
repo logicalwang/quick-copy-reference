@@ -54,6 +54,8 @@ jobs:
         run: '& .\scripts\test-portable-adapters.ps1'
       - name: Test bilingual settings dialogs and legacy configuration
         run: '& .\scripts\test-portable-dialog.ps1'
+      - name: Test browser PDF selection fallback and clipboard preservation
+        run: '& .\scripts\test-browser-selection.ps1'
       - name: Package Chinese and English portable editions
         run: python .\scripts\package-portable.py
       - name: Verify package contents, privacy, languages, and hashes

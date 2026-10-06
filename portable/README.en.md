@@ -2,11 +2,11 @@
 
 [简体中文](README.zh-CN.md) | **English**
 
-Version **1.0.6**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
+Version **1.0.7**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
 
 ## Install and choose a language
 
-1. Download `QuickCopyReference-portable-1.0.6-en.zip` for English or `QuickCopyReference-portable-1.0.6-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
+1. Download `QuickCopyReference-portable-1.0.7-en.zip` for English or `QuickCopyReference-portable-1.0.7-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
 2. Run `QuickCopyReference.exe`. First launch asks you to choose a language and shortcut. Click the shortcut box and press your preferred combination, such as Ctrl+Alt+Shift+R.
 3. Save and enable it. Select text or files in a supported app, release the keys, press your shortcut, then paste.
 
@@ -18,8 +18,7 @@ Settings, tray menus, success/error messages, shortcut conflict explanations, sl
 
 `QuickCopyReference.exe` is the new main entry point. `VickyReference.exe` remains an identical compatibility launcher for existing mouse mappings, scripts, and startup links. Configuration and local state directory names are preserved to retain existing preferences.
 
-
-Exit the old tray app. Extract `QuickCopyReference-update-1.0.6.zip` over the existing directory, replacing the four EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
+Exit the old tray app. Extract `QuickCopyReference-update-1.0.7.zip` over the existing directory, replacing the four EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
 
 ## Shortcut conflicts
 
@@ -42,7 +41,7 @@ Enable **Start with Windows** in the tray menu or settings dialog. Startup is pe
 | Excel | Saved workbook, worksheet/cell address, and available cell text |
 | PowerPoint | Saved presentation, current slide, selected text or shapes; slide-sorter multi-selection |
 | Chrome, Edge, Brave, Firefox | Page URL and available selected text |
-| Edge local PDF | Local PDF path and available selected text |
+| Chrome / Edge built-in PDF viewer | Local PDF path or online URL, with copyable selected text |
 | Notepad, MarkPad | Saved file and available selected text |
 | VS Code | Local saved file and selection line range; requires the bridge below |
 | Notepad++, Typora, MarkText, Cursor | Depends on exposure of a full path in a title or tab |
@@ -50,6 +49,10 @@ Enable **Start with Windows** in the tray menu or settings dialog. Startup is pe
 PowerPoint slide shows and presenter view are not adapted; return to the editing window. Unsaved files, protected views, higher-privilege apps, unavailable paths, and application versions that do not expose metadata may prevent capture. The app does not enable editing or alter security settings. Ambiguous sources are rejected rather than guessed. The receiving app decides whether to paste HTML or Markdown.
 
 The app waits for shortcut release and refuses capture if the foreground window changes. Browser capture may briefly focus the address bar. Classic Notepad may open and cancel Save As to read its path. These actions do not save your document.
+
+## PDF selections in the browser
+
+Select text in the PDF document, then press your shortcut. Selection is captured before reading the address, and included in the same reference label. If accessibility does not expose it, the app tries copying the current selection and restoring the previous clipboard. No selection means stale clipboard text is never used. Scanned images, copy-restricted PDFs, or pages awaiting text recognition may produce only a source reference. This reads the current text selection, not saved highlight annotations, and does not preserve bold or other source formatting.
 
 ## VS Code bridge
 
@@ -80,6 +83,7 @@ From the repository root on Windows, with Node.js, Python 3, and the .NET Framew
 node --test .\portable\tests\portable.test.mjs
 & .\scripts\test-portable-adapters.ps1
 & .\scripts\test-portable-dialog.ps1
+& .\scripts\test-browser-selection.ps1
 python .\scripts\package-portable.py
 python .\scripts\verify-portable-package.py
 ```
