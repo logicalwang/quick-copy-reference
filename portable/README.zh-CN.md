@@ -2,11 +2,11 @@
 
 **简体中文** | [English](README.en.md)
 
-版本 **1.0.7**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
+版本 **1.0.8**。使用自选全局快捷键或鼠标侧键，复制当前聚焦文件、文档或网页的引用；可读取时加入选中文字和位置。剪贴板同时提供单行 Markdown 引用和 HTML 链接。运行不需要 Stream Deck、Node.js 或 npm。
 
 ## 安装与语言
 
-1. 中文下载 `QuickCopyReference-portable-1.0.7-zh-CN.zip`，英文下载 `QuickCopyReference-portable-1.0.7-en.zip`。完整解压到可写、准备长期使用的目录。
+1. 中文下载 `QuickCopyReference-portable-1.0.8-zh-CN.zip`，英文下载 `QuickCopyReference-portable-1.0.8-en.zip`。完整解压到可写、准备长期使用的目录。
 2. 启动 `QuickCopyReference.exe`，首次选择语言和快捷键。点击输入框，直接按喜欢的组合键，例如 Ctrl+Alt+Shift+R。
 3. 保存并启用。在支持的软件中选中文字或文件，松开按键，按快捷键，再粘贴。
 
@@ -18,7 +18,7 @@
 
 `QuickCopyReference.exe` 是新的主入口；旧名 `VickyReference.exe` 保留为同一程序的兼容入口，原鼠标映射、脚本和开机启动仍可使用。内部配置和本地状态目录沿用旧名称，保留已有偏好。
 
-先退出旧托盘程序，用 `QuickCopyReference-update-1.0.7.zip` 覆盖四个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
+先退出旧托盘程序，用 `QuickCopyReference-update-1.0.8.zip` 覆盖四个 EXE，再启动。保留原来的 `reference-settings.json`，以保留快捷键和偏好。更新包没有配置文件；更新后可从托盘选择语言。
 
 ## 快捷键冲突
 
@@ -49,6 +49,10 @@
 PowerPoint 放映／演讲者视图暂未适配，请返回编辑窗口。未保存文件、受保护视图、高权限应用、不可用路径及不暴露元数据的软件版本可能无法读取。不会自动开启编辑或改变安全设置；来源不确定时拒绝猜测。接收应用决定粘贴 HTML 还是 Markdown。
 
 程序等待快捷键释放，期间前台窗口改变则拒绝读取。浏览器可能短暂聚焦地址栏；经典记事本可能打开并取消另存为，以取得路径。这些操作不保存文档。
+
+## 可读路径格式
+
+本地路径中的空格和括号保持可读，例如 `[notes.md](<C:/Example/Research Notes/notes.md>)`。复杂路径只包一对 `<...>`，行号后缀放在其内部。文件名中真正的 `%`、`#` 等字符保留必要转义；网页地址已有编码和签名参数保持原样。
 
 ## 浏览器中的 PDF 选区
 

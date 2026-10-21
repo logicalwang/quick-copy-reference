@@ -12,7 +12,7 @@ using System.Web.Script.Serialization;
 using System.Windows.Forms;
 
 public static class PortableReference {
-    public const string Version="1.0.7";
+    public const string Version="1.0.8";
     public static string L(string value){return Localizer.Text(value);}
     public static readonly JavaScriptSerializer Json=new JavaScriptSerializer();
     public static readonly string Root=AppDomain.CurrentDomain.BaseDirectory;

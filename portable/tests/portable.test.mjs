@@ -11,7 +11,7 @@ test('default configuration asks for a shortcut and contains no saved user prefe
  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root,'reference-settings.json'),'utf8')),{hotkey:'Ctrl+Alt+Shift+R',showSuccessNotification:true,configured:false,language:'auto'});
 });
 test('portable shortcut parsing, clipboard-shortcut protection and actual registration probe',()=>{
- for(const name of ['QuickCopyReference.exe','VickyReference.exe'])for(const language of ['zh-CN','en']){const reply=invoke(name,['--self-test','--language='+language]);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.7');assert.equal(reply.language,language);assert.equal(reply.product,language==='en'?'Quick Copy Reference':'快速复制引用');assert.ok(reply.protectedShortcut.includes('Ctrl+C'));assert.equal(reply.menuLabel,language==='en'?'View latest error':'查看最近错误');assert.equal(reply.successMessage,language==='en'?'Reference copied. Ready to paste.':'已复制引用，可以粘贴了');}
+ for(const name of ['QuickCopyReference.exe','VickyReference.exe'])for(const language of ['zh-CN','en']){const reply=invoke(name,['--self-test','--language='+language]);assert.equal(reply.ok,true);assert.equal(reply.version,'1.0.8');assert.equal(reply.language,language);assert.equal(reply.product,language==='en'?'Quick Copy Reference':'快速复制引用');assert.ok(reply.protectedShortcut.includes('Ctrl+C'));assert.equal(reply.menuLabel,language==='en'?'View latest error':'查看最近错误');assert.equal(reply.successMessage,language==='en'?'Reference copied. Ready to paste.':'已复制引用，可以粘贴了');}
 });
 test('English truncation marker is localized while Chinese document text stays intact',()=>{
  const result=format([{name:'文档.md',path:'C:/Example/文档.md',focus:'中文'.repeat(6500)}],'en');assert.ok(result.text.includes('中文'));assert.ok(result.text.includes('selection truncated'));assert.ok(!result.text.includes('选区过长'));
@@ -35,4 +35,17 @@ test('multi-file output is inline, keeps both sources and removes duplicates',()
 test('signed web URLs preserve query escapes',()=>{
  const url='https://example.com/doc?sig=a%2Fb%2Bc%3D&name=Notes+2026#section';
  assert.ok(format([{name:'page',path:url}]).htmlFragment.includes('sig=a%2Fb%2Bc%3D&amp;name=Notes+2026#section'));
+});
+test('local spaces stay readable and line suffix remains inside one angle destination',()=>{
+ const source='C:/Example/OneDrive - Example/Research Notes/notes.txt';
+ assert.equal(format([{path:source}]).text,'[notes.txt](<'+source+'>)');
+ const ranged=format([{path:source,startLine:757,endLine:770}]);
+ assert.equal(ranged.text,'[757–770 (line 757)](<'+source+':757>)');
+ assert.ok(!ranged.text.includes('%20'));
+ assert.ok(!ranged.text.includes('\\<') && !ranged.text.includes('<<'));
+});
+test('local parentheses remain readable while literal percent and hash stay unambiguous',()=>{
+ const result=format([{name:'notes',path:'C:/Example/Notes (1) [x]/literal%20 #.md'}]);
+ assert.equal(result.text,'[notes](<C:/Example/Notes (1) [x]/literal%2520 %23.md>)');
+ assert.ok(result.htmlFragment.includes('literal%2520 %23.md'));
 });

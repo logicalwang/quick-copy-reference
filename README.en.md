@@ -41,6 +41,8 @@ The source, selected text, and location form **one single-line Markdown link**, 
 [notes.md](C:/Example/notes.md) [paper.pdf](C:/Example/paper.pdf)
 ```
 
+Local spaces and parentheses stay readable, for example `[notes.md](<C:/Example/Research Notes/notes.md>)`. Complex paths use exactly one pair of `<...>`, with any line suffix inside. Literal `%`, `#`, and other sensitive filename characters retain necessary escaping; existing web URL escapes and signed parameters stay intact.
+
 ## Supported source apps
 
 The global shortcut is available across Windows; automatic source capture supports the apps listed below. Not every app exposes a file path or selection. Copied references can be pasted into other apps.

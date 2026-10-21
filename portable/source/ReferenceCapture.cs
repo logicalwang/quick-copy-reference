@@ -674,6 +674,10 @@ public static class ReferenceCapture {
             if(!string.IsNullOrWhiteSpace(item.location))label+=": "+VisibleText(item.location);
             string focus=ClipFocus(item.focus);if(focus!=null)label+=": "+focus;
             label=VisibleText(label);
+            // Angle destinations preserve readable spaces and punctuation. Wrap only
+            // after adding a line suffix, so :757 stays inside the actual target.
+            if(local && (destination.Any(char.IsWhiteSpace) || destination.IndexOfAny(new[]{'(',')','[',']'})>=0))
+                destination="<"+destination+">";
             string link="["+EscapeLabel(label)+"]("+destination+")";
             if(seen.Add(link)){links.Add(link);html.Add("<a href=\""+HtmlEscape(richDestination)+"\">"+HtmlEscape(label)+"</a>");}
         }
@@ -712,11 +716,11 @@ public static class ReferenceCapture {
     static string EscapeLinkPart(string value) { return Uri.EscapeDataString(value).Replace("(","%28").Replace(")","%29"); }
     static string LinkDestination(string destination,bool local) {
         if(local) {
-            // Preserve readable Unicode. Encode only characters that break a bare Markdown target
-            // or have URI meaning; never decode raw filesystem names such as literal%20.md.
+            // Spaces, Unicode and parentheses stay readable inside <...>. URI-significant
+            // percent/hash and Markdown entities still need escaping. Never decode literal%20.md.
             var readable=new StringBuilder();
             foreach(char c in destination) {
-                if(char.IsWhiteSpace(c) || "%&#()[]<>\"`\\".IndexOf(c)>=0)readable.Append(EscapeLinkPart(c.ToString()));
+                if(c=='\u2028' || c=='\u2029' || "%&#<>\"`\\".IndexOf(c)>=0)readable.Append(EscapeLinkPart(c.ToString()));
                 else readable.Append(c);
             }
             return readable.ToString();
