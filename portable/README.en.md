@@ -2,11 +2,11 @@
 
 [简体中文](README.zh-CN.md) | **English**
 
-Version **1.0.8**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
+Version **1.0.9**. Copy a reference to the focused file, document, or web page with your own global keyboard shortcut or a mouse side button. Selected text and locations are included when available. The clipboard contains a single-line Markdown reference and an HTML link. No Stream Deck, Node.js, or npm is required to run the app.
 
 ## Install and choose a language
 
-1. Download `QuickCopyReference-portable-1.0.8-en.zip` for English or `QuickCopyReference-portable-1.0.8-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
+1. Download `QuickCopyReference-portable-1.0.9-en.zip` for English or `QuickCopyReference-portable-1.0.9-zh-CN.zip` for Simplified Chinese. Extract the whole folder to a writable, permanent location.
 2. Run `QuickCopyReference.exe`. First launch asks you to choose a language and shortcut. Click the shortcut box and press your preferred combination, such as Ctrl+Alt+Shift+R.
 3. Save and enable it. Select text or files in a supported app, release the keys, press your shortcut, then paste.
 
@@ -18,7 +18,7 @@ Settings, tray menus, success/error messages, shortcut conflict explanations, sl
 
 `QuickCopyReference.exe` is the new main entry point. `VickyReference.exe` remains an identical compatibility launcher for existing mouse mappings, scripts, and startup links. Configuration and local state directory names are preserved to retain existing preferences.
 
-Exit the old tray app. Extract `QuickCopyReference-update-1.0.8.zip` over the existing directory, replacing the four EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
+Exit the old tray app. Extract `QuickCopyReference-update-1.0.9.zip` over the existing directory, replacing the four EXEs, then restart. Keep your original `reference-settings.json` to retain your shortcut and preferences. The update ZIP contains no settings file. Choose your language from the tray menu after updating.
 
 ## Shortcut conflicts
 
@@ -49,6 +49,10 @@ Enable **Start with Windows** in the tray menu or settings dialog. Startup is pe
 PowerPoint slide shows and presenter view are not adapted; return to the editing window. Unsaved files, protected views, higher-privilege apps, unavailable paths, and application versions that do not expose metadata may prevent capture. The app does not enable editing or alter security settings. Ambiguous sources are rejected rather than guessed. The receiving app decides whether to paste HTML or Markdown.
 
 The app waits for shortcut release and refuses capture if the foreground window changes. Browser capture may briefly focus the address bar. Classic Notepad may open and cancel Save As to read its path. These actions do not save your document.
+
+## Local OneDrive Office paths
+
+When Office reports a OneDrive/SharePoint URL, registered sync mappings and the complete relative path identify an existing local file, retaining selections and locations. Multiple existing copies are rejected; a missing file under a known root reports a sync issue. Online documents without a registered mapping retain their URL.
 
 ## Readable local paths
 

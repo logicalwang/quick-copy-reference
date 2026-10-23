@@ -10,3 +10,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Adapter test compilation failed' }
 Copy-Item -LiteralPath (Join-Path $adapterPortable 'ReferenceCapture.exe') -Destination (Join-Path $adapterPortable 'tests\ReferenceCapture.exe')
 & $adapterOutput
 if ($LASTEXITCODE -ne 0) { throw 'Adapter source-correlation tests failed' }
+$officeAdapterOutput = Join-Path $adapterPortable 'tests\OfficeSyncPathTest.exe'
+& $adapterCompiler /nologo /main:OfficeSyncPathTest ('/reference:' + (Join-Path $adapterPortable 'ReferenceCapture.exe')) ('/out:' + $officeAdapterOutput) (Join-Path $adapterPortable 'tests\OfficeSyncPathTest.cs')
+if ($LASTEXITCODE -ne 0) { throw 'Office sync-path test compilation failed' }
+& $officeAdapterOutput
+if ($LASTEXITCODE -ne 0) { throw 'Office sync-path tests failed' }

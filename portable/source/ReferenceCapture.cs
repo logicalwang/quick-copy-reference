@@ -150,7 +150,95 @@ public static class ReferenceCapture {
         }catch(ReferenceError){throw;}catch(Exception error){RecordFailure("office-com-window",error);}
         throw new ReferenceError("office_unavailable","Cannot read this Office document; close modal dialogs and try again");
     }
-    static Item OfficeDocument(dynamic doc){string folder=(string)doc.Path;if(string.IsNullOrEmpty(folder))throw new ReferenceError("unsaved","Save this document to a file first");return ToItem((string)doc.FullName,(string)doc.Name);}
+    static Item OfficeDocument(dynamic doc){string folder=(string)doc.Path;if(string.IsNullOrEmpty(folder))throw new ReferenceError("unsaved","Save this document to a file first");return OfficeItem((string)doc.FullName,(string)doc.Name);}
+    static Item OfficeItem(string source,string name) {
+        Uri uri;
+        if(Uri.TryCreate(source,UriKind.Absolute,out uri) && uri.Scheme=="https") {
+            string local=ResolveSyncedOfficePath(source,ReadOfficeSyncRoots());
+            if(local!=null){diagnostics.Add("office-synced-local");return LocalItem(local);}
+        }
+        return ToItem(source,name);
+    }
+    public class OfficeSyncRoot {public string urlNamespace {get;set;} public string mountPoint {get;set;}}
+    static List<OfficeSyncRoot> ReadOfficeSyncRoots() {
+        var roots=new List<OfficeSyncRoot>();
+        try {
+            using(var providers=Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\SyncEngines\Providers\OneDrive")) {
+                if(providers!=null)foreach(string id in providers.GetSubKeyNames()) {
+                    using(var entry=providers.OpenSubKey(id)) {
+                        if(entry!=null)AddOfficeSyncRoot(roots,entry.GetValue("UrlNamespace") as string,entry.GetValue("MountPoint") as string);
+                    }
+                }
+            }
+        }catch(Exception error){RecordFailure("office-sync-providers",error);}
+        try {
+            using(var accounts=Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\OneDrive\Accounts")) {
+                if(accounts!=null)foreach(string id in accounts.GetSubKeyNames()) {
+                    using(var account=accounts.OpenSubKey(id)) {
+                        if(account==null)continue;
+                        string folder=account.GetValue("UserFolder") as string;
+                        AddOfficeSyncRoot(roots,account.GetValue("UrlNamespace") as string,folder);
+                        // The generic d.docs.live.net namespace alone is insufficient:
+                        // include the registered personal account CID, never guess an account.
+                        string cid=account.GetValue("cid") as string;
+                        if(id.Equals("Personal",StringComparison.OrdinalIgnoreCase) && cid!=null && Regex.IsMatch(cid,@"\A[0-9a-fA-F]{16}\z"))
+                            AddOfficeSyncRoot(roots,"https://d.docs.live.net/"+cid+"/",folder);
+                    }
+                }
+            }
+        }catch(Exception error){RecordFailure("office-sync-accounts",error);}
+        return roots;
+    }
+    static void AddOfficeSyncRoot(List<OfficeSyncRoot> roots,string space,string folder) {
+        if(!string.IsNullOrWhiteSpace(space) && IsLocalPath(folder))roots.Add(new OfficeSyncRoot{urlNamespace=space,mountPoint=folder});
+    }
+    static bool OfficeUrlParts(string value,out Uri uri,out string[] parts) {
+        parts=null;
+        if(!Uri.TryCreate(value,UriKind.Absolute,out uri) || uri.Scheme!="https" || !uri.IsDefaultPort || !string.IsNullOrEmpty(uri.UserInfo))return false;
+        // Parse original escaped segments before System.Uri can normalize encoded dots.
+        var match=Regex.Match(value,@"\Ahttps://[^/?#]+(?<path>/[^?#]*)?",RegexOptions.IgnoreCase);
+        if(!match.Success)return false;
+        string raw=match.Groups["path"].Value;
+        if(Regex.IsMatch(raw,@"%(?![0-9a-fA-F]{2})"))return false;
+        var result=new List<string>();
+        string[] segments=raw.Split('/');
+        for(int n=1;n<segments.Length;n++) {
+            if(segments[n].Length==0){if(n==segments.Length-1)continue;return false;}
+            string part=Uri.UnescapeDataString(segments[n]);
+            if(part=="." || part==".." || part.Any(char.IsControl) || part.IndexOfAny(new[]{'/','\\','<','>','"',':','|','?','*'})>=0 || part.EndsWith(" ") || part.EndsWith("."))return false;
+            result.Add(part);
+        }
+        parts=result.ToArray();return true;
+    }
+    public static string ResolveSyncedOfficePath(string source,IEnumerable<OfficeSyncRoot> roots) {
+        Uri fileUri;string[] fileParts;
+        if(roots==null || !OfficeUrlParts(source,out fileUri,out fileParts))return null;
+        int longest=-1;var candidates=new List<string>();
+        foreach(var root in roots) {
+            if(root==null || !IsLocalPath(root.mountPoint))continue;
+            Uri rootUri;string[] rootParts;
+            if(!OfficeUrlParts(root.urlNamespace,out rootUri,out rootParts) || rootParts.Length==0 || !string.IsNullOrEmpty(rootUri.Query) || !string.IsNullOrEmpty(rootUri.Fragment))continue;
+            if(!string.Equals(fileUri.Authority,rootUri.Authority,StringComparison.OrdinalIgnoreCase) || rootParts.Length>=fileParts.Length)continue;
+            bool match=true;for(int n=0;n<rootParts.Length;n++)if(!string.Equals(rootParts[n],fileParts[n],StringComparison.OrdinalIgnoreCase)){match=false;break;}
+            if(!match || rootParts.Length<longest)continue;
+            string mount,candidate;
+            try {
+                mount=Path.GetFullPath(root.mountPoint).TrimEnd('\\','/')+Path.DirectorySeparatorChar;candidate=mount;
+                for(int n=rootParts.Length;n<fileParts.Length;n++)candidate=Path.Combine(candidate,fileParts[n]);
+                candidate=Path.GetFullPath(candidate);
+                if(!candidate.StartsWith(mount,StringComparison.OrdinalIgnoreCase))continue;
+            }catch{continue;}
+            // A more specific registered sync root wins even if its local file is
+            // currently missing; falling back to a broader root could reference a stale copy.
+            if(rootParts.Length>longest){longest=rootParts.Length;candidates.Clear();}
+            if(File.Exists(candidate))candidates.Add(candidate);
+        }
+        if(longest<0)return null;
+        candidates=candidates.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if(candidates.Count>1)throw new ReferenceError("ambiguous","Multiple synchronized copies match the current Office document");
+        if(candidates.Count==0)throw new ReferenceError("missing_file","The synchronized Office file is not available locally; check OneDrive sync status");
+        return candidates[0];
+    }
     static bool OfficeWindowMatches(dynamic window){try{long value=Convert.ToInt64(window.Hwnd);IntPtr handle=IntPtr.Size==8?new IntPtr(unchecked((long)(uint)value)):new IntPtr(unchecked((int)value));return handle==foreground || GetAncestor(handle,2)==foreground;}catch{return false;}}
     static List<Item> PowerPointWindow() {
         // DocumentWindow exposes Caption and Active, but has no documented HWND.

@@ -43,6 +43,8 @@ The source, selected text, and location form **one single-line Markdown link**, 
 
 Local spaces and parentheses stay readable, for example `[notes.md](<C:/Example/Research Notes/notes.md>)`. Complex paths use exactly one pair of `<...>`, with any line suffix inside. Literal `%`, `#`, and other sensitive filename characters retain necessary escaping; existing web URL escapes and signed parameters stay intact.
 
+When Office reports a OneDrive/SharePoint URL, registered sync mappings and the complete relative path identify an existing local file, retaining selections and locations. Multiple existing copies are rejected; a missing file under a known root reports a sync issue. Online documents without a registered mapping retain their URL.
+
 ## Supported source apps
 
 The global shortcut is available across Windows; automatic source capture supports the apps listed below. Not every app exposes a file path or selection. Copied references can be pasted into other apps.
